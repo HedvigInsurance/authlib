@@ -10,7 +10,7 @@ on:
       - "v*.*.*"
 
 jobs:
-  cd:
+  publish:
     runs-on: macos-12
 
     steps:
@@ -25,7 +25,7 @@ jobs:
         with:
           xcode-version: '14.0'
       - name: Build XCFramework
-        run: JAVA_HOME=$JAVA_HOME_11 ./gradlew :common:assembleXCFramework --no-daemon
+        run: JAVA_HOME=$JAVA_HOME_11 ./gradlew :assembleXCFramework --no-daemon
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
