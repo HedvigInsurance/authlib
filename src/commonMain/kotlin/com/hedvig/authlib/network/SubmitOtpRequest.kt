@@ -1,12 +1,8 @@
 package com.hedvig.authlib.network
 
-// TODO
+import kotlinx.serialization.Serializable
 
-//fun createSubmitOtpRequest(
-//  otp: String,
-//): RequestBody {
-//  val builder = FormBody.Builder()
-//  builder.add("otp", otp)
-//  return builder.build()
-//}
-
+@Serializable
+data class SubmitOtpRequest(
+    val otp: String
+)

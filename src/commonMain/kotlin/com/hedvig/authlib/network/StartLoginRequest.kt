@@ -9,14 +9,14 @@ import kotlinx.serialization.Serializable
 data class StartLoginRequest(
     val method: String,
     val country: String,
-    val personalNumber: String,
+    val personalNumber: String?,
     val email: String?
 )
 
 fun HttpRequestBuilder.buildStartLoginRequest(
     loginMethod: LoginMethod,
     market: String,
-    personalNumber: String,
+    personalNumber: String?,
     email: String?
 ) {
     val body = StartLoginRequest(

@@ -1,11 +1,10 @@
 package com.hedvig.authlib.network
 
-import com.hedvig.authlib.RefreshCode
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-//fun createLogoutRequestBody(refreshCode: RefreshCode): FormBody {
-//  val builder = FormBody.Builder()
-//  builder.add("refresh_token", refreshCode.code)
-//  return builder.build()
-//}
-
-// TODO
+@Serializable
+data class LogoutRequest(
+    @SerialName("refresh_token")
+    val refreshToken: String
+)
