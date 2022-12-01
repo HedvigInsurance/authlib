@@ -26,7 +26,12 @@ jobs:
           xcode-version: '14.0'
       - name: Build XCFramework
         run: JAVA_HOME=$JAVA_HOME_11 ./gradlew :assembleXCFramework --no-daemon
-      - name: Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          files: build/XCframeworks/release/authlib.xcframework
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/XCframeworks/release/authlib.xcframework
+          asset_name: authlib.xcframework
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "Release"
