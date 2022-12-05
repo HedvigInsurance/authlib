@@ -3,9 +3,11 @@ package com.hedvig.authlib
 import com.hedvig.authlib.network.*
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -13,9 +15,14 @@ import kotlinx.coroutines.flow.flow
 private const val POLL_DELAY_MILLIS = 1000L
 
 class NetworkAuthRepository(
-    private val ktorClient: HttpClient,
-    private val url: String
+    private val environment: AuthEnvironment
 ) : AuthRepository {
+    private val ktorClient: HttpClient = HttpClient {
+        install(ContentNegotiation) {
+            json()
+        }
+    }
+
     override suspend fun startLoginAttempt(
         loginMethod: LoginMethod,
         market: String,
@@ -23,7 +30,7 @@ class NetworkAuthRepository(
         email: String?
     ): AuthAttemptResult {
         return try {
-            val response = ktorClient.post("$url/member-login") {
+            val response = ktorClient.post("${environment.baseUrl}/member-login") {
                 buildStartLoginRequest(
                     loginMethod,
                     market,
@@ -42,7 +49,7 @@ class NetworkAuthRepository(
         return flow {
             while (true) {
                 try {
-                    val response = ktorClient.get("$url${statusUrl.url}")
+                    val response = ktorClient.get("${environment.baseUrl}${statusUrl.url}")
 
                     val loginStatusResult = response.toLoginStatusResult()
 
@@ -61,7 +68,7 @@ class NetworkAuthRepository(
     }
 
     override suspend fun submitOtp(verifyUrl: String, otp: String): SubmitOtpResult {
-        val response = ktorClient.post("$url$verifyUrl") {
+        val response = ktorClient.post("${environment.baseUrl}$verifyUrl") {
             contentType(ContentType.Application.Json)
             setBody(SubmitOtpRequest(otp))
         }
@@ -71,7 +78,7 @@ class NetworkAuthRepository(
 
     override suspend fun resendOtp(resendUrl: String): ResendOtpResult {
         return try {
-            val response = ktorClient.post("$url$resendUrl")
+            val response = ktorClient.post("${environment.baseUrl}$resendUrl")
 
             return response.body()
         } catch (e: Exception) {
@@ -80,7 +87,7 @@ class NetworkAuthRepository(
     }
 
     override suspend fun submitAuthorizationCode(authorizationCode: AuthorizationCode): AuthTokenResult {
-        val submitUrl = "$url/oauth/token"
+        val submitUrl = "${environment.baseUrl}/oauth/token"
 
         return try {
             when (authorizationCode) {
@@ -119,7 +126,7 @@ class NetworkAuthRepository(
 
     override suspend fun logout(refreshCode: RefreshCode): LogoutResult {
         return try {
-            val response = ktorClient.post("$url/oauth/logout") {
+            val response = ktorClient.post("${environment.baseUrl}/oauth/logout") {
                 contentType(ContentType.Application.Json)
                 setBody(LogoutRequest(refreshCode.code))
             }

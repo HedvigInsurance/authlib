@@ -39,6 +39,8 @@ kotlin {
                 implementation(libs.ktor.core)
                 implementation(libs.ktor.json)
                 implementation(libs.kotlinx.serializationJson)
+                implementation(libs.ktor.client.contentNegotiation)
+                implementation(libs.ktor.client.logging)
             }
         }
         val commonTest by getting {
@@ -50,7 +52,11 @@ kotlin {
         val jvmTest by getting
         val jsMain by getting
         val jsTest by getting
-        val iosMain by creating
+        val iosMain by creating {
+            dependencies {
+                implementation(libs.ktor.darwin)
+            }
+        }
         val iosTest by creating
 
         listOf(
