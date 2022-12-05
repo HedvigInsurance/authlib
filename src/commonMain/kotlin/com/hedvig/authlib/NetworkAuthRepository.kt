@@ -4,6 +4,7 @@ import com.hedvig.authlib.network.*
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -11,6 +12,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.Json
 
 private const val POLL_DELAY_MILLIS = 1000L
 
@@ -19,7 +21,18 @@ class NetworkAuthRepository(
 ) : AuthRepository {
     private val ktorClient: HttpClient = HttpClient {
         install(ContentNegotiation) {
-            json()
+            json(
+                Json {
+                    allowSpecialFloatingPointValues = true
+                    isLenient = true
+                    allowStructuredMapKeys = true
+                    ignoreUnknownKeys = true
+                }
+            )
+        }
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = LogLevel.INFO
         }
     }
 
