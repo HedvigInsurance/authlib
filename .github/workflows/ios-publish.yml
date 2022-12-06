@@ -26,12 +26,13 @@ jobs:
           xcode-version: '14.0'
       - name: Build XCFramework
         run: JAVA_HOME=$JAVA_HOME_11 ./gradlew :assembleXCFramework --no-daemon
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/XCframeworks/release/authlib.xcframework
-          asset_name: authlib.xcframework
-          tag: ${{ github.ref }}
-          overwrite: true
-          body: "Release"
+      - name: Make release
+        run: |
+          set -x
+          assets=()
+          for asset in ./build/XCFrameworks/release/*.zip; do
+            assets+=("-a" "$asset")
+          done
+          hub release create "${assets[@]}" -m "${{ github.ref }}" "${{ github.ref }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
