@@ -3,7 +3,6 @@ package com.hedvig.authlib.network
 import com.hedvig.authlib.AccessToken
 import com.hedvig.authlib.AuthTokenResult
 import com.hedvig.authlib.RefreshToken
-import com.hedvig.authlib.RefreshTokenGrant
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -23,13 +22,12 @@ data class SubmitAuthorizationCodeResponse(
 )
 
 suspend fun HttpResponse.toAuthTokenResult(): AuthTokenResult {
-    val result = if (status == HttpStatusCode.OK) {
+    return if (status == HttpStatusCode.OK) {
         val response = body<SubmitAuthorizationCodeResponse>()
-        return response.toAuthAttemptResult()
+        response.toAuthAttemptResult()
     } else {
         AuthTokenResult.Error(bodyAsText())
     }
-    return result
 }
 
 private fun SubmitAuthorizationCodeResponse.toAuthAttemptResult() = AuthTokenResult.Success(

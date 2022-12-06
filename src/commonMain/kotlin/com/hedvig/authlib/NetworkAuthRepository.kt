@@ -3,6 +3,7 @@ package com.hedvig.authlib
 import com.hedvig.authlib.network.*
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
@@ -17,7 +18,8 @@ import kotlinx.serialization.json.Json
 private const val POLL_DELAY_MILLIS = 1000L
 
 class NetworkAuthRepository(
-    private val environment: AuthEnvironment
+    private val environment: AuthEnvironment,
+    private val additionalHttpHeaders: Map<String, String>
 ) : AuthRepository {
     private val ktorClient: HttpClient = HttpClient {
         install(ContentNegotiation) {
@@ -33,6 +35,11 @@ class NetworkAuthRepository(
         install(Logging) {
             logger = Logger.DEFAULT
             level = LogLevel.INFO
+        }
+        defaultRequest {
+            additionalHttpHeaders.forEach { entry ->
+                header(entry.key, entry.value)
+            }
         }
     }
 
@@ -89,14 +96,18 @@ class NetworkAuthRepository(
             setBody(SubmitOtpRequest(otp))
         }
 
-        return response.body()
+        return response.toSubmitOtpResult()
     }
 
     override suspend fun resendOtp(resendUrl: String): ResendOtpResult {
         return try {
             val response = ktorClient.post("${environment.baseUrl}$resendUrl")
 
-            return response.body()
+            if (response.status == HttpStatusCode.OK) {
+                ResendOtpResult.Success
+            } else {
+                ResendOtpResult.Error("Error: ${response.bodyAsText()}")
+            }
         } catch (e: Exception) {
             ResendOtpResult.Error("Error: ${e.message}")
         }
@@ -140,11 +151,11 @@ class NetworkAuthRepository(
         }
     }
 
-    override suspend fun logout(refreshToken: RefreshTokenGrant): LogoutResult {
+    override suspend fun logout(refreshToken: String): LogoutResult {
         return try {
             val response = ktorClient.post("${environment.baseUrl}/oauth/logout") {
                 contentType(ContentType.Application.Json)
-                setBody(LogoutRequest(refreshToken.code))
+                setBody(LogoutRequest(refreshToken))
             }
 
             if (response.status == HttpStatusCode.OK) {

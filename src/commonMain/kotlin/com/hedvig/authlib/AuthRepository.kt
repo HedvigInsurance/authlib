@@ -22,7 +22,7 @@ interface AuthRepository {
 
     suspend fun exchange(grant: Grant): AuthTokenResult
 
-    suspend fun logout(refreshToken: RefreshTokenGrant): LogoutResult
+    suspend fun logout(refreshToken: String): LogoutResult
 }
 
 enum class LoginMethod {
