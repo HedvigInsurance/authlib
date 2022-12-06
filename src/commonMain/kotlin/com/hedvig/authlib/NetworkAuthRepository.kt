@@ -2,7 +2,6 @@ package com.hedvig.authlib
 
 import com.hedvig.authlib.network.*
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
@@ -151,20 +150,20 @@ class NetworkAuthRepository(
         }
     }
 
-    override suspend fun logout(refreshToken: String): LogoutResult {
+    override suspend fun revoke(token: String): RevokeResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}/oauth/logout") {
+            val response = ktorClient.post("${environment.baseUrl}/oauth/revoke") {
                 contentType(ContentType.Application.Json)
-                setBody(LogoutRequest(refreshToken))
+                setBody(RevokeRequest(token))
             }
 
             if (response.status == HttpStatusCode.OK) {
-                LogoutResult.Success
+                RevokeResult.Success
             } else {
-                LogoutResult.Error("Could not logout: ${response.bodyAsText()}")
+                RevokeResult.Error("Could not logout: ${response.bodyAsText()}")
             }
         } catch (e: Exception) {
-            LogoutResult.Error("Error: ${e.message}")
+            RevokeResult.Error("Error: ${e.message}")
         }
     }
 }

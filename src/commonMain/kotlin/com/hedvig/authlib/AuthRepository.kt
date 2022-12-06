@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 
 interface AuthRepository {
-
     suspend fun startLoginAttempt(
         loginMethod: LoginMethod,
         market: String,
@@ -22,7 +21,7 @@ interface AuthRepository {
 
     suspend fun exchange(grant: Grant): AuthTokenResult
 
-    suspend fun logout(refreshToken: String): LogoutResult
+    suspend fun revoke(token: String): RevokeResult
 }
 
 enum class LoginMethod {
@@ -105,7 +104,7 @@ data class RefreshToken(
     val expiryInSeconds: Int
 )
 
-sealed interface LogoutResult {
-    data class Error(val message: String) : LogoutResult
-    object Success : LogoutResult
+sealed interface RevokeResult {
+    data class Error(val message: String) : RevokeResult
+    object Success : RevokeResult
 }
