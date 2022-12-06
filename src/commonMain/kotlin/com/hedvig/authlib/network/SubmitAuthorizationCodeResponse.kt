@@ -2,8 +2,8 @@ package com.hedvig.authlib.network
 
 import com.hedvig.authlib.AccessToken
 import com.hedvig.authlib.AuthTokenResult
-import com.hedvig.authlib.RefreshCode
 import com.hedvig.authlib.RefreshToken
+import com.hedvig.authlib.RefreshTokenGrant
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -24,7 +24,8 @@ data class SubmitAuthorizationCodeResponse(
 
 suspend fun HttpResponse.toAuthTokenResult(): AuthTokenResult {
     val result = if (status == HttpStatusCode.OK) {
-        return body()
+        val response = body<SubmitAuthorizationCodeResponse>()
+        return response.toAuthAttemptResult()
     } else {
         AuthTokenResult.Error(bodyAsText())
     }
@@ -37,7 +38,7 @@ private fun SubmitAuthorizationCodeResponse.toAuthAttemptResult() = AuthTokenRes
         expiryInSeconds = accessTokenExpiresIn
     ),
     refreshToken = RefreshToken(
-        token = RefreshCode(refreshToken),
+        token = refreshToken,
         expiryInSeconds = refreshTokenExpiresIn
     )
 )

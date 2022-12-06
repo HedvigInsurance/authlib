@@ -1,6 +1,7 @@
 package com.hedvig.authlib
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Serializable
 
 interface AuthRepository {
 
@@ -13,13 +14,15 @@ interface AuthRepository {
 
     fun observeLoginStatus(statusUrl: StatusUrl): Flow<LoginStatusResult>
 
+    suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult
+
     suspend fun submitOtp(verifyUrl: String, otp: String): SubmitOtpResult
 
     suspend fun resendOtp(resendUrl: String): ResendOtpResult
 
-    suspend fun submitAuthorizationCode(authorizationCode: AuthorizationCode): AuthTokenResult
+    suspend fun exchange(grant: Grant): AuthTokenResult
 
-    suspend fun logout(refreshCode: RefreshCode): LogoutResult
+    suspend fun logout(refreshToken: RefreshTokenGrant): LogoutResult
 }
 
 enum class LoginMethod {
@@ -55,8 +58,10 @@ sealed interface AuthAttemptResult {
 data class StatusUrl(val url: String)
 
 sealed interface AuthTokenResult {
+    @Serializable
     data class Error(val message: String) : AuthTokenResult
 
+    @Serializable
     data class Success(
         val accessToken: AccessToken,
         val refreshToken: RefreshToken
@@ -66,12 +71,12 @@ sealed interface AuthTokenResult {
 sealed interface LoginStatusResult {
     data class Failed(val message: String) : LoginStatusResult
     data class Pending(val statusMessage: String?) : LoginStatusResult
-    data class Completed(val authorizationCode: LoginAuthorizationCode) : LoginStatusResult
+    data class Completed(val authorizationCode: AuthorizationCodeGrant) : LoginStatusResult
 }
 
 sealed interface SubmitOtpResult {
     data class Error(val message: String) : SubmitOtpResult
-    data class Success(val loginAuthorizationCode: LoginAuthorizationCode) : SubmitOtpResult
+    data class Success(val loginAuthorizationCode: AuthorizationCodeGrant) : SubmitOtpResult
 }
 
 sealed interface ResendOtpResult {
@@ -79,21 +84,24 @@ sealed interface ResendOtpResult {
     object Success : ResendOtpResult
 }
 
-sealed interface AuthorizationCode {
+sealed interface Grant {
     val code: String
 }
 
-data class LoginAuthorizationCode(override val code: String) : AuthorizationCode
+data class AuthorizationCodeGrant(override val code: String) : Grant
 
-data class RefreshCode(override val code: String) : AuthorizationCode
+@Serializable
+data class RefreshTokenGrant(override val code: String) : Grant
 
+@Serializable
 data class AccessToken(
     val token: String,
     val expiryInSeconds: Int
 )
 
+@Serializable
 data class RefreshToken(
-    val token: RefreshCode,
+    val token: String,
     val expiryInSeconds: Int
 )
 

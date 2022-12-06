@@ -58,23 +58,26 @@ class NetworkAuthRepository(
         }
     }
 
+    override suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult {
+        return try {
+            val response = ktorClient.get("${environment.baseUrl}${statusUrl.url}")
+            response.toLoginStatusResult()
+        } catch (e: Exception) {
+            LoginStatusResult.Failed("Error: ${e.message}")
+        }
+    }
+
     override fun observeLoginStatus(statusUrl: StatusUrl): Flow<LoginStatusResult> {
         return flow {
             while (true) {
-                try {
-                    val response = ktorClient.get("${environment.baseUrl}${statusUrl.url}")
+                val loginStatusResult = loginStatus(statusUrl)
 
-                    val loginStatusResult = response.toLoginStatusResult()
+                emit(loginStatusResult)
 
-                    emit(loginStatusResult)
-
-                    if (loginStatusResult is LoginStatusResult.Pending) {
-                        delay(POLL_DELAY_MILLIS)
-                    } else {
-                        break
-                    }
-                } catch (e: Exception) {
-                    emit(LoginStatusResult.Failed("Error: ${e.message}"))
+                if (loginStatusResult is LoginStatusResult.Pending) {
+                    delay(POLL_DELAY_MILLIS)
+                } else {
+                    break
                 }
             }
         }
@@ -99,17 +102,17 @@ class NetworkAuthRepository(
         }
     }
 
-    override suspend fun submitAuthorizationCode(authorizationCode: AuthorizationCode): AuthTokenResult {
+    override suspend fun exchange(grant: Grant): AuthTokenResult {
         val submitUrl = "${environment.baseUrl}/oauth/token"
 
         return try {
-            when (authorizationCode) {
-                is LoginAuthorizationCode -> {
+            when (grant) {
+                is AuthorizationCodeGrant -> {
                     val response = ktorClient.post(submitUrl) {
                         contentType(ContentType.Application.Json)
                         setBody(
                             SubmitAuthorizationCodeRequest(
-                                authorizationCode = authorizationCode.code,
+                                authorizationCode = grant.code,
                                 grantType = "authorization_code"
                             )
                         )
@@ -118,12 +121,12 @@ class NetworkAuthRepository(
                     response.toAuthTokenResult()
                 }
 
-                is RefreshCode -> {
+                is RefreshTokenGrant -> {
                     val response = ktorClient.post(submitUrl) {
                         contentType(ContentType.Application.Json)
                         setBody(
                             SubmitAuthorizationCodeRequest(
-                                authorizationCode = authorizationCode.code,
+                                authorizationCode = grant.code,
                                 grantType = "refresh_token"
                             )
                         )
@@ -137,11 +140,11 @@ class NetworkAuthRepository(
         }
     }
 
-    override suspend fun logout(refreshCode: RefreshCode): LogoutResult {
+    override suspend fun logout(refreshToken: RefreshTokenGrant): LogoutResult {
         return try {
             val response = ktorClient.post("${environment.baseUrl}/oauth/logout") {
                 contentType(ContentType.Application.Json)
-                setBody(LogoutRequest(refreshCode.code))
+                setBody(LogoutRequest(refreshToken.code))
             }
 
             if (response.status == HttpStatusCode.OK) {
