@@ -24,13 +24,25 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '14.0'
-      - name: Build XCFramework
-        run: JAVA_HOME=$JAVA_HOME_11 ./gradlew :assembleXCFramework --no-daemon
+      - name: Cache Konan
+        id: cache-konan
+        uses: actions/cache@v3
+        with:
+          path: ~/.konan/
+          key: konan
+      - uses: burrunan/gradle-cache-action@v1
+        name: Build XCFramework
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_11 }}
+        with:
+          job-id: publish-ci
+          concurrent: true
+          arguments: :assembleAuthlibReleaseXCFramework
       - name: Make release
         run: |
           set -x
           assets=()
-          for asset in ./build/XCFrameworks/release/*.zip; do
+          for asset in ${{ github.workspace }}/build/XCFrameworks/release/*.zip; do
             assets+=("-a" "$asset")
           done
           hub release create "${assets[@]}" -m "${{ github.ref }}" "${{ github.ref }}"
