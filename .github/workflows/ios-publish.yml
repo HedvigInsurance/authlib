@@ -43,7 +43,7 @@ jobs:
           set -x
           assets=()
           
-          zip -r ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework.zip {{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework/*
+          zip -r ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework.zip ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework/*
           
           for asset in ${{ github.workspace }}/build/XCFrameworks/release/*.zip; do
             assets+=("-a" "$asset")
