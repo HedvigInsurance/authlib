@@ -52,6 +52,6 @@ jobs:
 #          package-name:
 
       - name: Publish to GitHub packages
-        run: ./gradlew common:publishAllPublicationsToMavenRepository
+        run: ./gradlew publishAllPublicationsToMavenRepository
         env:
           ORG_GRADLE_PROJECT_AUTHLIB_VERSION_ALPHA_TIMESTAMP: "${{ steps.time.outputs.time }}"
