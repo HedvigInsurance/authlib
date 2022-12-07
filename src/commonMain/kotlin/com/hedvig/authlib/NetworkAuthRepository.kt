@@ -90,12 +90,16 @@ class NetworkAuthRepository(
     }
 
     override suspend fun submitOtp(verifyUrl: String, otp: String): SubmitOtpResult {
-        val response = ktorClient.post("${environment.baseUrl}$verifyUrl") {
-            contentType(ContentType.Application.Json)
-            setBody(SubmitOtpRequest(otp))
-        }
+        return try {
+            val response = ktorClient.post("${environment.baseUrl}$verifyUrl") {
+                contentType(ContentType.Application.Json)
+                setBody(SubmitOtpRequest(otp))
+            }
 
-        return response.toSubmitOtpResult()
+            response.toSubmitOtpResult()
+        } catch (e: Exception) {
+            SubmitOtpResult.Error("Error: ${e.message}")
+        }
     }
 
     override suspend fun resendOtp(resendUrl: String): ResendOtpResult {
