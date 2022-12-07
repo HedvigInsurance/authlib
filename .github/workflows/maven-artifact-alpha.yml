@@ -1,0 +1,57 @@
+name: Publish common dev Artifacts to GitHub packages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    tags-ignore:
+      - '**'
+
+env:
+  ORG_GRADLE_PROJECT_HEDVIG_GITHUB_PACKAGES_USER: ${{ secrets.HEDVIG_GITHUB_PACKAGES_USER }}
+  ORG_GRADLE_PROJECT_HEDVIG_GITHUB_PACKAGES_TOKEN: ${{ secrets.HEDVIG_GITHUB_PACKAGES_TOKEN }}
+
+jobs:
+  publish:
+    name: Release build and publish
+    runs-on: macos-12
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-java@v3.6.0
+        with:
+          distribution: 'zulu'
+          java-version: 14
+
+      - name: Generate alpha version timestamp
+        id: time
+        uses: nanzm/get-time-action@v1.1
+        with:
+          timeZone: 0
+          format: 'YYYY-MM-DD-HH-mm-ss'
+
+      - name: Print tag to be generated and save into env
+        env:
+          ORG_GRADLE_PROJECT_AUTHLIB_VERSION_ALPHA_TIMESTAMP: "${{ steps.time.outputs.time }}"
+        run: |
+          echo "Timestamp: $ORG_GRADLE_PROJECT_AUTHLIB_VERSION_ALPHA_TIMESTAMP"
+
+      - name: Build
+        id: gradle
+        uses: gradle/gradle-build-action@v2.3.3
+        env:
+          ORG_GRADLE_PROJECT_AUTHLIB_VERSION_ALPHA_TIMESTAMP: "${{ steps.time.outputs.time }}"
+
+#      Maybe consider deleting old artifacts here
+#      - name: Delete old SNAPSHOT
+#        uses: actions/delete-package-versions@v3.0.1
+#        with:
+#          package-name:
+
+      - name: Publish to GitHub packages
+        run: ./gradlew common:publishAllPublicationsToMavenRepository
+        env:
+          ORG_GRADLE_PROJECT_AUTHLIB_VERSION_ALPHA_TIMESTAMP: "${{ steps.time.outputs.time }}"
