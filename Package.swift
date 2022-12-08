@@ -16,8 +16,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "authlib",
-            url: "https://github.com/HedvigInsurance/authlib/releases/download/v0.0.10/authlib.xcframework.zip",// authlib URL
-            checksum: "a924fc7709ab77e597e02386ea780b0d5d8dafb98b8c3be574dc675523fd6d6d"// authlib Checksum
+            url: "https://github.com/HedvigInsurance/authlib/releases/download/v0.0.11/authlib.xcframework.zip",// authlib URL
+            checksum: "fc9bbf334aa95b12f1a168566089d7f4e7705c105292f512a9597ff7aca7bc8d"// authlib Checksum
         )
     ]
 )
