@@ -55,7 +55,7 @@ jobs:
           }
             
           function replaceURL {
-            BASE_URL="https:\/\/github.com\/HedvigInsurance\/authlib\/raw\/$1"
+             BASE_URL="https:\/\/github.com\/HedvigInsurance\/authlib\/releases\/download\/$1"
             sed -i '' "s/url: \".*\",\/\/ $2 URL/url: \"$BASE_URL\/$2.xcframework.zip\",\/\/ $2 URL/g" Package.swift
           }
           
