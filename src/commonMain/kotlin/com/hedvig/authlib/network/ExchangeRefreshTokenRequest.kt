@@ -4,9 +4,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SubmitAuthorizationCodeRequest(
-    @SerialName("authorization_code")
-    val authorizationCode: String,
+data class ExchangeRefreshTokenRequest(
+    @SerialName("refresh_token")
+    val refreshToken: String,
     @SerialName("grant_type")
     val grantType: String
 )

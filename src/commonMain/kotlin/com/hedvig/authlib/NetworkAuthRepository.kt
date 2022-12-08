@@ -121,7 +121,7 @@ class NetworkAuthRepository(
                     val response = ktorClient.post(submitUrl) {
                         contentType(ContentType.Application.Json)
                         setBody(
-                            SubmitAuthorizationCodeRequest(
+                            ExchangeAuthorizationCodeRequest(
                                 authorizationCode = grant.code,
                                 grantType = "authorization_code"
                             )
@@ -135,8 +135,8 @@ class NetworkAuthRepository(
                     val response = ktorClient.post(submitUrl) {
                         contentType(ContentType.Application.Json)
                         setBody(
-                            SubmitAuthorizationCodeRequest(
-                                authorizationCode = grant.code,
+                            ExchangeRefreshTokenRequest(
+                                refreshToken = grant.code,
                                 grantType = "refresh_token"
                             )
                         )
