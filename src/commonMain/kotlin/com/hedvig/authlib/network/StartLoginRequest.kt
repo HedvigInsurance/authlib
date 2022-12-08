@@ -5,8 +5,8 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
 
-const val SUCCESS_CALLBACK_URL = "https://google.se?q=success"
-const val FAILURE_CALLBACK_URL = "https://google.se?q=failure"
+const val SUCCESS_CALLBACK_URL = "https://hedvig.com?q=success"
+const val FAILURE_CALLBACK_URL = "https://hedvig.com?q=failure"
 
 @Serializable
 data class StartLoginRequest(
