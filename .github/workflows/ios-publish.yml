@@ -47,8 +47,14 @@ jobs:
           
           RELEASE_DIR="${{ github.workspace }}/build/XCFrameworks/release/"
           
-          zip -r ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework.zip ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework/*
+          function zipXCFramework {
+            cd $1
+            zip -r $2.xcframework.zip $2.xcframework/*
+            cd -
+          }
           
+          zipXCFramework ${{ github.workspace }}/build/XCFrameworks/release/ authlib
+                    
           function replaceChecksum {
             CHECKSUM=$(swift package compute-checksum "$RELEASE_DIR$1".xcframework.zip)
             sed -i '' "s/checksum: \"[a-z0-9]*\"\/\/ $1 Checksum/checksum: \"$CHECKSUM\"\/\/ $1 Checksum/g" Package.swift
