@@ -5,9 +5,12 @@ defaults:
     shell: bash -ieo pipefail {0}
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (enter prefix v, like v0.0.1)'
+        required: true
+        type: string
 
 jobs:
   publish:
@@ -30,9 +33,6 @@ jobs:
         with:
           path: ~/.konan/
           key: konan
-      - name: Get version
-        id: version
-        run: echo "number=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
       - uses: burrunan/gradle-cache-action@v1
         name: Build XCFramework
         env:
@@ -60,7 +60,7 @@ jobs:
           }
           
           replaceChecksum "authlib"
-          replaceURL "${{ steps.version.outputs.number }}" "authlib"
+          replaceURL "${{ inputs.version }}" "authlib"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update Package.swift
@@ -76,6 +76,6 @@ jobs:
           for asset in ${{ github.workspace }}/build/XCFrameworks/release/*.zip; do
             assets+=("-a" "$asset")
           done
-          hub release create "${assets[@]}" -m "${{ steps.version.outputs.number }}" "${{ steps.version.outputs.number }}"
+          hub release create "${assets[@]}" -m "${{ inputs.version }}" "${{ inputs.version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
