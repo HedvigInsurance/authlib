@@ -30,6 +30,9 @@ jobs:
         with:
           path: ~/.konan/
           key: konan
+      - name: Get version
+        id: version
+        run: echo "number=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
       - uses: burrunan/gradle-cache-action@v1
         name: Build XCFramework
         env:
@@ -38,16 +41,38 @@ jobs:
           job-id: publish-ci
           concurrent: true
           arguments: :assembleAuthlibReleaseXCFramework
+      - name: Prepare ZIP
+        run: |
+          set -x          
+          zip -r ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework.zip ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework/*
+          
+          function replaceChecksum {
+            CHECKSUM=$(swift package compute-checksum "$IOS_FOLDER"/build/"$1".xcframework.zip)
+            sed -i '' "s/checksum: \"[a-z0-9]*\"\/\/ $1 Checksum/checksum: \"$CHECKSUM\"\/\/ $1 Checksum/g" Package.swift
+          }
+            
+          function replaceURL {
+            BASE_URL="https:\/\/github.com\/HedvigInsurance\/OdysseyKit\/raw\/$1"
+            sed -i '' "s/url: \".*\",\/\/ $2 URL/url: \"$BASE_URL\/$2.xcframework.zip\",\/\/ $2 URL/g" Package.swift
+          }
+          
+          replaceChecksum "authlib"
+          replaceURL "${{ steps.version.outputs.number }}" "authlib"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update Package.swift
+        uses: test-room-7/action-update-file@v1
+        with:
+          file-path: Package.swift
+          commit-msg: Update Package.swift
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
       - name: Make release
         run: |
           set -x
-          assets=()
-          
-          zip -r ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework.zip ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework/*
-          
           for asset in ${{ github.workspace }}/build/XCFrameworks/release/*.zip; do
             assets+=("-a" "$asset")
           done
-          hub release create "${assets[@]}" -m "${{ github.ref }}" "${{ github.ref }}"
+          hub release create "${assets[@]}" -m "${{ steps.version.outputs.number }}" "${{ steps.version.outputs.number }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
