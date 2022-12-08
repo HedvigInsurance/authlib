@@ -43,16 +43,19 @@ jobs:
           arguments: :assembleAuthlibReleaseXCFramework
       - name: Prepare ZIP
         run: |
-          set -x          
+          set -x
+          
+          RELEASE_DIR="${{ github.workspace }}/build/XCFrameworks/release/"
+          
           zip -r ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework.zip ${{ github.workspace }}/build/XCFrameworks/release/authlib.xcframework/*
           
           function replaceChecksum {
-            CHECKSUM=$(swift package compute-checksum "$IOS_FOLDER"/build/"$1".xcframework.zip)
+            CHECKSUM=$(swift package compute-checksum "$RELEASE_DIR$1".xcframework.zip)
             sed -i '' "s/checksum: \"[a-z0-9]*\"\/\/ $1 Checksum/checksum: \"$CHECKSUM\"\/\/ $1 Checksum/g" Package.swift
           }
             
           function replaceURL {
-            BASE_URL="https:\/\/github.com\/HedvigInsurance\/OdysseyKit\/raw\/$1"
+            BASE_URL="https:\/\/github.com\/HedvigInsurance\/authlib\/raw\/$1"
             sed -i '' "s/url: \".*\",\/\/ $2 URL/url: \"$BASE_URL\/$2.xcframework.zip\",\/\/ $2 URL/g" Package.swift
           }
           
