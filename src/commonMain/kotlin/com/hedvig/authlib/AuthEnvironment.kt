@@ -11,3 +11,11 @@ val AuthEnvironment.baseUrl: String
             AuthEnvironment.PRODUCTION -> "https://auth.prod.hedvigit.com"
         }
     }
+
+val AuthEnvironment.gatewayUrl: String
+    get() {
+        return when (this) {
+            AuthEnvironment.STAGING -> "https://gateway.test.hedvigit.com"
+            AuthEnvironment.PRODUCTION -> "https://gateway.hedvig.com"
+        }
+    }

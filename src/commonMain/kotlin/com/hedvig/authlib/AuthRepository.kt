@@ -22,6 +22,8 @@ interface AuthRepository {
     suspend fun exchange(grant: Grant): AuthTokenResult
 
     suspend fun revoke(token: String): RevokeResult
+
+    suspend fun migrateOldToken(token: String): AuthTokenResult
 }
 
 enum class LoginMethod {

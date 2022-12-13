@@ -2,6 +2,7 @@ package com.hedvig.authlib
 
 import com.hedvig.authlib.network.*
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
@@ -168,6 +169,21 @@ class NetworkAuthRepository(
             }
         } catch (e: Exception) {
             RevokeResult.Error("Error: ${e.message}")
+        }
+    }
+
+    override suspend fun migrateOldToken(token: String): AuthTokenResult {
+        return try {
+            val response = ktorClient.post("${environment.gatewayUrl}/migrate-auth-token") {
+                contentType(ContentType.Application.Json)
+                setBody(MigrateOldTokenRequest(token))
+            }
+
+            val responseBody = response.body<MigrateOldTokenResponse>()
+
+            return exchange(AuthorizationCodeGrant(responseBody.authorizationCode))
+        } catch (e: Exception) {
+            AuthTokenResult.Error("Error: ${e.message}")
         }
     }
 }
