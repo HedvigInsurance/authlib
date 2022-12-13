@@ -113,5 +113,5 @@ sealed interface RevokeResult {
 
 sealed interface MigrateResult {
     data class Error(val message: String) : MigrateResult
-    data class Success(val authorizationToken: AuthorizationCodeGrant) : MigrateResult
+    data class Success(val grant: AuthorizationCodeGrant) : MigrateResult
 }

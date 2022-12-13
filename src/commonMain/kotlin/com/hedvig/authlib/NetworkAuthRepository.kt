@@ -178,11 +178,7 @@ class NetworkAuthRepository(
                 setBody(MigrateTokenRequest(token))
             }
 
-            if (response.status == HttpStatusCode.OK) {
-                MigrateResult.Success(AuthorizationCodeGrant(token))
-            } else {
-                MigrateResult.Error("Could not migrate: ${response.bodyAsText()}")
-            }
+            response.toMigrateTokenResponse()
         } catch (e: Exception) {
             MigrateResult.Error("Error: ${e.message}")
         }

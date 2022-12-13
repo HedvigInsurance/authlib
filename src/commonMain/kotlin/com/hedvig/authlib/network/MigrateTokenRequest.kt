@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MigrateTokenRequest(
-    val authorizationCode: String
+    val token: String
 )
