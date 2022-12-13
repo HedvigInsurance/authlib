@@ -22,6 +22,8 @@ interface AuthRepository {
     suspend fun exchange(grant: Grant): AuthTokenResult
 
     suspend fun revoke(token: String): RevokeResult
+
+    suspend fun migrateFromToken(token: String): MigrateResult
 }
 
 enum class LoginMethod {
@@ -107,4 +109,9 @@ data class RefreshToken(
 sealed interface RevokeResult {
     data class Error(val message: String) : RevokeResult
     object Success : RevokeResult
+}
+
+sealed interface MigrateResult {
+    data class Error(val message: String) : MigrateResult
+    data class Success(val authorizationToken: AuthorizationCodeGrant) : MigrateResult
 }

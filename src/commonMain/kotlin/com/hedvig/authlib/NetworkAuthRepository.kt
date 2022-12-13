@@ -170,4 +170,21 @@ class NetworkAuthRepository(
             RevokeResult.Error("Error: ${e.message}")
         }
     }
+
+    override suspend fun migrateFromToken(token: String): MigrateResult {
+        return try {
+            val response = ktorClient.post("${environment.baseUrl}/migrate-auth-token") {
+                contentType(ContentType.Application.Json)
+                setBody(MigrateTokenRequest(token))
+            }
+
+            if (response.status == HttpStatusCode.OK) {
+                MigrateResult.Success(AuthorizationCodeGrant(token))
+            } else {
+                MigrateResult.Error("Could not migrate: ${response.bodyAsText()}")
+            }
+        } catch (e: Exception) {
+            MigrateResult.Error("Error: ${e.message}")
+        }
+    }
 }
