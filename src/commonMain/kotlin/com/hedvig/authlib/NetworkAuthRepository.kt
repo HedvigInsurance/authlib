@@ -17,9 +17,15 @@ import kotlinx.serialization.json.Json
 
 private const val POLL_DELAY_MILLIS = 1000L
 
+data class Callbacks(
+    val successUrl: String,
+    val failureUrl: String
+)
+
 class NetworkAuthRepository(
     private val environment: AuthEnvironment,
-    private val additionalHttpHeaders: Map<String, String>
+    private val additionalHttpHeaders: Map<String, String>,
+    private val callbacks: Callbacks
 ) : AuthRepository {
     private val ktorClient: HttpClient = HttpClient {
         install(ContentNegotiation) {
@@ -55,7 +61,8 @@ class NetworkAuthRepository(
                     loginMethod,
                     market,
                     personalNumber,
-                    email
+                    email,
+                    callbacks
                 )
             }
 
