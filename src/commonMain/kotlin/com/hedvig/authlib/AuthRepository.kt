@@ -70,6 +70,7 @@ sealed interface AuthTokenResult {
 }
 
 sealed interface LoginStatusResult {
+    data class Exception(val message: String) : LoginStatusResult
     data class Failed(val message: String) : LoginStatusResult
     data class Pending(val statusMessage: String?) : LoginStatusResult
     data class Completed(val authorizationCode: AuthorizationCodeGrant) : LoginStatusResult

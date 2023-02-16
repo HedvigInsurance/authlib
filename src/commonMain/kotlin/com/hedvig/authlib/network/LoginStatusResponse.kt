@@ -23,7 +23,7 @@ suspend fun HttpResponse.toLoginStatusResult(): LoginStatusResult {
         val responseBody = body<LoginStatusResponse>()
         responseBody.toLoginStatusResult()
     } else {
-        LoginStatusResult.Failed(message = bodyAsText())
+        LoginStatusResult.Exception(message = bodyAsText())
     }
     return result
 }

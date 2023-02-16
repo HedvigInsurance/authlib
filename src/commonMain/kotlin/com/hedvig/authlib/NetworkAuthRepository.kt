@@ -80,7 +80,7 @@ class NetworkAuthRepository(
             val response = ktorClient.get("${environment.baseUrl}${statusUrl.url}")
             response.toLoginStatusResult()
         } catch (e: Exception) {
-            LoginStatusResult.Failed("Error: ${e.message}")
+            LoginStatusResult.Exception("Error: ${e.message}")
         }
     }
 
