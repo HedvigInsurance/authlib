@@ -10,8 +10,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LoginStatusResponse(
     val status: LoginStatus,
-    val statusText: String?,
-    val authorizationCode: String?
+    val statusText: String,
+    val authorizationCode: String?,
 ) {
     enum class LoginStatus {
         PENDING, FAILED, COMPLETED
@@ -30,7 +30,7 @@ suspend fun HttpResponse.toLoginStatusResult(): LoginStatusResult {
 
 private fun LoginStatusResponse.toLoginStatusResult() = when (status) {
     LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(statusText)
-    LoginStatusResponse.LoginStatus.FAILED -> LoginStatusResult.Failed("Login status failed")
+    LoginStatusResponse.LoginStatus.FAILED -> LoginStatusResult.Failed(statusText)
     LoginStatusResponse.LoginStatus.COMPLETED -> {
         require(authorizationCode != null) {
             "Login status completed but did not receive authorization code"
