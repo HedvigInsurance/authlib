@@ -1,15 +1,36 @@
 package com.hedvig.authlib
 
-import com.hedvig.authlib.network.*
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import com.hedvig.authlib.network.ExchangeAuthorizationCodeRequest
+import com.hedvig.authlib.network.ExchangeRefreshTokenRequest
+import com.hedvig.authlib.network.MigrateOldTokenRequest
+import com.hedvig.authlib.network.MigrateOldTokenResponse
+import com.hedvig.authlib.network.RevokeRequest
+import com.hedvig.authlib.network.SubmitOtpRequest
+import com.hedvig.authlib.network.buildStartLoginRequest
+import com.hedvig.authlib.network.toAuthAttemptResult
+import com.hedvig.authlib.network.toAuthTokenResult
+import com.hedvig.authlib.network.toLoginStatusResult
+import com.hedvig.authlib.network.toSubmitOtpResult
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.call.body
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -25,29 +46,41 @@ data class Callbacks(
 class NetworkAuthRepository(
     private val environment: AuthEnvironment,
     private val additionalHttpHeaders: Map<String, String>,
-    private val callbacks: Callbacks
+    private val callbacks: Callbacks,
+    private val httpClientEngine: HttpClientEngine? = null,
 ) : AuthRepository {
-    private val ktorClient: HttpClient = HttpClient {
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    allowSpecialFloatingPointValues = true
-                    isLenient = true
-                    allowStructuredMapKeys = true
-                    ignoreUnknownKeys = true
+    private val ktorClient: HttpClient = run {
+        val httpClientConfig: HttpClientConfig<*>.() -> Unit = {
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        allowSpecialFloatingPointValues = true
+                        isLenient = true
+                        allowStructuredMapKeys = true
+                        ignoreUnknownKeys = true
+                    }
+                )
+            }
+            install(Logging) {
+                logger = Logger.DEFAULT
+                level = LogLevel.INFO
+            }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 5000
+            }
+            defaultRequest {
+                additionalHttpHeaders.forEach { entry ->
+                    header(entry.key, entry.value)
                 }
-            )
+            }
         }
-        install(Logging) {
-            logger = Logger.DEFAULT
-            level = LogLevel.INFO
-        }
-        install(HttpTimeout) {
-            requestTimeoutMillis = 5000
-        }
-        defaultRequest {
-            additionalHttpHeaders.forEach { entry ->
-                header(entry.key, entry.value)
+        if (httpClientEngine == null) {
+            HttpClient {
+                httpClientConfig()
+            }
+        } else {
+            HttpClient(httpClientEngine) {
+                httpClientConfig()
             }
         }
     }
