@@ -26,12 +26,6 @@ kotlin {
             useJUnitPlatform()
         }
     }
-    js(BOTH) {
-        browser {
-            commonWebpackConfig {
-            }
-        }
-    }
 
     val xcf = XCFramework("authlib")
 
@@ -56,8 +50,6 @@ kotlin {
             }
         }
         val jvmTest by getting
-        val jsMain by getting
-        val jsTest by getting
         val iosMain by creating {
             dependencies {
                 implementation(libs.ktor.darwin)
