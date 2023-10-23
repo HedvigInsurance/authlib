@@ -66,7 +66,7 @@ class NetworkAuthRepository(
                 level = LogLevel.INFO
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 5000
+                requestTimeoutMillis = 10_000
             }
             defaultRequest {
                 additionalHttpHeaders.forEach { entry ->
