@@ -29,7 +29,6 @@ kotlin {
     js(BOTH) {
         browser {
             commonWebpackConfig {
-                cssSupport.enabled = true
             }
         }
     }
@@ -51,7 +50,11 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                api(libs.ktor.okhttp)
+            }
+        }
         val jvmTest by getting
         val jsMain by getting
         val jsTest by getting
