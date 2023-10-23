@@ -2,7 +2,7 @@
 kotlin = "1.9.10"
 ktor = "2.3.5"
 kotlinxSerialization = "1.6.0"
-vanniktechGradleMavenPublish = "0.22.0"
+vanniktechMavenPublish = "0.25.3"
 
 [libraries]
 ktor-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -15,4 +15,4 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 
 [plugins]
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-vanniktechGradleMavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechGradleMavenPublish" }
+vanniktechGradleMavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }

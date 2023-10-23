@@ -76,20 +76,23 @@ kotlin {
     }
 }
 
-version = buildString {
-    val versionString = extra["AUTHLIB_VERSION_NAME"] as String
-    append(versionString)
-    if (versionString.contains("alpha").not()) return@buildString
-    if (project.hasProperty("AUTHLIB_VERSION_ALPHA_TIMESTAMP").not()) return@buildString
-    val alphaTimestamp = project.findProperty("AUTHLIB_VERSION_ALPHA_TIMESTAMP") as String
-    if (alphaTimestamp.isBlank()) return@buildString
-    append("-")
-    append(alphaTimestamp)
-}
-
-group = "com.hedvig.authlib"
-
 mavenPublishing {
+    val groupId = "com.hedvig.authlib"
+    val version = buildString {
+        val versionString = extra["AUTHLIB_VERSION_NAME"] as String
+        append(versionString)
+        if (versionString.contains("alpha").not()) return@buildString
+        if (project.hasProperty("AUTHLIB_VERSION_ALPHA_TIMESTAMP").not()) return@buildString
+        val alphaTimestamp = project.findProperty("AUTHLIB_VERSION_ALPHA_TIMESTAMP") as String
+        if (alphaTimestamp.isBlank()) return@buildString
+        append("-")
+        append(alphaTimestamp)
+    }
+    coordinates(
+        groupId = groupId,
+        artifactId = "authlib",
+        version = version,
+    )
     pom {
         name.set("authlib")
         description.set("OAuth Authentication library for Hedvig applications")
