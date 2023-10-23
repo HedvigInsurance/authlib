@@ -6,6 +6,9 @@ on:
     tags:
       - '**'
 
+permissions:
+  contents: write
+
 env:
   ORG_GRADLE_PROJECT_HEDVIG_GITHUB_PACKAGES_USER: ${{ secrets.HEDVIG_GITHUB_PACKAGES_USER }}
   ORG_GRADLE_PROJECT_HEDVIG_GITHUB_PACKAGES_TOKEN: ${{ secrets.HEDVIG_GITHUB_PACKAGES_TOKEN }}
