@@ -8,12 +8,12 @@ fun OkHttpNetworkAuthRepository(
   environment: AuthEnvironment,
   additionalHttpHeaders: Map<String, String>,
   callbacks: Callbacks,
-  okHttpClientBuilder: OkHttpClient.Builder.() -> Unit,
+  okHttpClientBuilder: OkHttpClient.Builder,
 ): AuthRepository {
   return NetworkAuthRepository(
     environment = environment,
     additionalHttpHeaders = additionalHttpHeaders,
     callbacks = callbacks,
-    httpClientEngine = OkHttpEngine(OkHttpConfig().apply { config(okHttpClientBuilder) }),
+    httpClientEngine = OkHttpEngine(OkHttpConfig().apply { preconfigured = okHttpClientBuilder.build() }),
   )
 }
