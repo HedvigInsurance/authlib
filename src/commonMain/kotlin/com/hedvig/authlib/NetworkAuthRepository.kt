@@ -45,7 +45,7 @@ public data class Callbacks(
 
 public class NetworkAuthRepository(
     private val environment: AuthEnvironment,
-    private val additionalHttpHeaders: Map<String, String>,
+    private val additionalHttpHeadersProvider: () -> Map<String, String>,
     private val callbacks: Callbacks,
     private val httpClientEngine: HttpClientEngine? = null,
 ) : AuthRepository {
@@ -69,7 +69,7 @@ public class NetworkAuthRepository(
                 requestTimeoutMillis = 10_000
             }
             defaultRequest {
-                additionalHttpHeaders.forEach { entry ->
+                additionalHttpHeadersProvider().forEach { entry ->
                     header(entry.key, entry.value)
                 }
             }

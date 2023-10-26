@@ -7,13 +7,13 @@ import okhttp3.OkHttpClient
 @Suppress("FunctionName")
 public fun OkHttpNetworkAuthRepository(
   environment: AuthEnvironment,
-  additionalHttpHeaders: Map<String, String>,
+  additionalHttpHeadersProvider: () -> Map<String, String>,
   callbacks: Callbacks,
   okHttpClientBuilder: OkHttpClient.Builder,
 ): AuthRepository {
   return NetworkAuthRepository(
     environment = environment,
-    additionalHttpHeaders = additionalHttpHeaders,
+    additionalHttpHeadersProvider = additionalHttpHeadersProvider,
     callbacks = callbacks,
     httpClientEngine = OkHttpEngine(OkHttpConfig().apply { preconfigured = okHttpClientBuilder.build() }),
   )
