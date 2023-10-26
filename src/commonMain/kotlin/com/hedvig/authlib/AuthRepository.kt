@@ -1,7 +1,6 @@
 package com.hedvig.authlib
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 
 public interface AuthRepository {
@@ -70,10 +69,8 @@ public sealed interface AuthAttemptResult {
 public data class StatusUrl(val url: String)
 
 public sealed interface AuthTokenResult {
-    @Serializable
     public data class Error(val message: String) : AuthTokenResult
 
-    @Serializable
     public data class Success(
         val accessToken: AccessToken,
         val refreshToken: RefreshToken
@@ -105,13 +102,11 @@ public data class AuthorizationCodeGrant(override val code: String) : Grant
 
 public data class RefreshTokenGrant(override val code: String) : Grant
 
-@Serializable
 public data class AccessToken(
     val token: String,
     val expiryInSeconds: Int
 )
 
-@Serializable
 public data class RefreshToken(
     val token: String,
     val expiryInSeconds: Int
