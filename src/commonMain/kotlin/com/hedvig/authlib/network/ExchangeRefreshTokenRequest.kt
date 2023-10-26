@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ExchangeRefreshTokenRequest(
+internal data class ExchangeRefreshTokenRequest(
     @SerialName("refresh_token")
     val refreshToken: String,
     @SerialName("grant_type")

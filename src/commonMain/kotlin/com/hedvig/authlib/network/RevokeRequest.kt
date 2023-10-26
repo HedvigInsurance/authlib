@@ -1,9 +1,8 @@
 package com.hedvig.authlib.network
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RevokeRequest(
+internal data class RevokeRequest(
     val token: String
 )

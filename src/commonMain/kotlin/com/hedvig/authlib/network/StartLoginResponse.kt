@@ -8,7 +8,7 @@ import io.ktor.http.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class StartLoginResponse(
+internal data class StartLoginResponse(
     val id: String,
     val method: String,
     val statusUrl: String,
@@ -34,7 +34,7 @@ data class StartLoginResponse(
     )
 }
 
-suspend fun HttpResponse.toAuthAttemptResult(): AuthAttemptResult {
+internal suspend fun HttpResponse.toAuthAttemptResult(): AuthAttemptResult {
     return if (status == HttpStatusCode.OK) {
         body<StartLoginResponse>().toAuthAttemptResult()
     } else {

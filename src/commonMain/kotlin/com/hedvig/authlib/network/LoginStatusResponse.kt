@@ -8,7 +8,7 @@ import io.ktor.http.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LoginStatusResponse(
+internal data class LoginStatusResponse(
     val status: LoginStatus,
     val statusText: String,
     val authorizationCode: String?,
@@ -18,7 +18,7 @@ data class LoginStatusResponse(
     }
 }
 
-suspend fun HttpResponse.toLoginStatusResult(): LoginStatusResult {
+internal suspend fun HttpResponse.toLoginStatusResult(): LoginStatusResult {
     val result = if (status == HttpStatusCode.OK) {
         val responseBody = body<LoginStatusResponse>()
         responseBody.toLoginStatusResult()
@@ -28,7 +28,7 @@ suspend fun HttpResponse.toLoginStatusResult(): LoginStatusResult {
     return result
 }
 
-private fun LoginStatusResponse.toLoginStatusResult() = when (status) {
+private fun LoginStatusResponse.toLoginStatusResult(): LoginStatusResult = when (status) {
     LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(statusText)
     LoginStatusResponse.LoginStatus.FAILED -> LoginStatusResult.Failed(statusText)
     LoginStatusResponse.LoginStatus.COMPLETED -> {

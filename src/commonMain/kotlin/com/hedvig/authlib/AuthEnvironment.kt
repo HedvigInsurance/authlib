@@ -4,7 +4,7 @@ enum class AuthEnvironment {
     STAGING, PRODUCTION
 }
 
-val AuthEnvironment.baseUrl: String
+internal val AuthEnvironment.baseUrl: String
     get() {
         return when (this) {
             AuthEnvironment.STAGING -> "https://auth.dev.hedvigit.com"
@@ -12,7 +12,7 @@ val AuthEnvironment.baseUrl: String
         }
     }
 
-val AuthEnvironment.gatewayUrl: String
+internal val AuthEnvironment.gatewayUrl: String
     get() {
         return when (this) {
             AuthEnvironment.STAGING -> "https://gateway.test.hedvigit.com"

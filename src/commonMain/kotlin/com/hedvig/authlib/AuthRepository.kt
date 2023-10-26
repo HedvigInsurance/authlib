@@ -26,6 +26,7 @@ interface AuthRepository {
     suspend fun migrateOldToken(token: String): AuthTokenResult
 }
 
+@Suppress("unused")
 enum class LoginMethod {
     SE_BANKID, ZIGNSEC, OTP
 }

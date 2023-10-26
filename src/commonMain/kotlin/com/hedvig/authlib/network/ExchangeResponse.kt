@@ -10,7 +10,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ExchangeResponse(
+internal data class ExchangeResponse(
     @SerialName("access_token")
     val accessToken: String,
     @SerialName("expires_in")
@@ -21,7 +21,7 @@ data class ExchangeResponse(
     val refreshTokenExpiresIn: Int
 )
 
-suspend fun HttpResponse.toAuthTokenResult(): AuthTokenResult {
+internal suspend fun HttpResponse.toAuthTokenResult(): AuthTokenResult {
     return if (status == HttpStatusCode.OK) {
         val response = body<ExchangeResponse>()
         response.toAuthAttemptResult()
@@ -30,7 +30,7 @@ suspend fun HttpResponse.toAuthTokenResult(): AuthTokenResult {
     }
 }
 
-private fun ExchangeResponse.toAuthAttemptResult() = AuthTokenResult.Success(
+private fun ExchangeResponse.toAuthAttemptResult(): AuthTokenResult.Success = AuthTokenResult.Success(
     accessToken = AccessToken(
         token = accessToken,
         expiryInSeconds = accessTokenExpiresIn

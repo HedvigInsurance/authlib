@@ -7,7 +7,7 @@ import io.ktor.http.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class StartLoginRequest(
+internal data class StartLoginRequest(
     val method: String,
     val country: String,
     val personalNumber: String?,
@@ -16,7 +16,7 @@ data class StartLoginRequest(
     val callbackFailure: String
 )
 
-fun HttpRequestBuilder.buildStartLoginRequest(
+internal fun HttpRequestBuilder.buildStartLoginRequest(
     loginMethod: LoginMethod,
     market: String,
     personalNumber: String?,

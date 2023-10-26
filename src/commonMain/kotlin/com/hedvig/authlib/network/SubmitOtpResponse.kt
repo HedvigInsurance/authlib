@@ -8,11 +8,11 @@ import io.ktor.http.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SubmitOtpResponse(
+internal data class SubmitOtpResponse(
     val authorizationCode: String
 )
 
-suspend fun HttpResponse.toSubmitOtpResult(): SubmitOtpResult {
+internal suspend fun HttpResponse.toSubmitOtpResult(): SubmitOtpResult {
     return if (status == HttpStatusCode.OK) {
         val response = body<SubmitOtpResponse>()
         SubmitOtpResult.Success(AuthorizationCodeGrant(response.authorizationCode))
