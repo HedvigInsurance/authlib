@@ -128,4 +128,4 @@ public sealed interface MemberAuthorizationCodeResult {
 @JvmInline
 public value class MemberPaymentUrl(
     public val url: String
-) : MemberAuthorizationCodeResult
+)
