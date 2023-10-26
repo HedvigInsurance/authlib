@@ -64,6 +64,7 @@ kotlin {
         ).forEach { target: org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget ->
             target.binaries.framework {
                 baseName = "authlib"
+                binaryOption("bundleId", "authlib")
                 xcf.add(this)
             }
             getByName("${target.targetName}Main") {
