@@ -38,12 +38,12 @@ import kotlinx.serialization.json.Json
 
 private const val POLL_DELAY_MILLIS = 1000L
 
-data class Callbacks(
+public data class Callbacks(
     val successUrl: String,
     val failureUrl: String
 )
 
-class NetworkAuthRepository(
+public class NetworkAuthRepository(
     private val environment: AuthEnvironment,
     private val additionalHttpHeaders: Map<String, String>,
     private val callbacks: Callbacks,

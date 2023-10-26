@@ -1,6 +1,6 @@
 package com.hedvig.authlib
 
-enum class AuthEnvironment {
+public enum class AuthEnvironment {
     STAGING, PRODUCTION
 }
 
