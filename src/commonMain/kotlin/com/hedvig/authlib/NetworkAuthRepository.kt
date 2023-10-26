@@ -2,6 +2,7 @@ package com.hedvig.authlib
 
 import com.hedvig.authlib.network.ExchangeAuthorizationCodeRequest
 import com.hedvig.authlib.network.ExchangeRefreshTokenRequest
+import com.hedvig.authlib.network.MemberAuthorizationCodesResponse
 import com.hedvig.authlib.network.MigrateOldTokenRequest
 import com.hedvig.authlib.network.MigrateOldTokenResponse
 import com.hedvig.authlib.network.RevokeRequest
@@ -31,6 +32,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -227,6 +229,30 @@ public class NetworkAuthRepository(
             return exchange(AuthorizationCodeGrant(responseBody.authorizationCode))
         } catch (e: Exception) {
             AuthTokenResult.Error("Error: ${e.message}")
+        }
+    }
+
+    override suspend fun getMemberAuthorizationCode(
+        webLocale: String,
+    ): MemberAuthorizationCodeResult {
+        return try {
+            val authorizationCode = ktorClient
+                .post("${environment.baseUrl}/member-authorization-codes")
+                .body<MemberAuthorizationCodesResponse>()
+                .authorizationCode
+            val memberPaymentUrl = MemberPaymentUrl(
+                url = buildString {
+                    append(environment.webBaseUrl)
+                    append("/")
+                    append(webLocale)
+                    append("/payment/connect-legacy/start?authorizationCode=")
+                    append(authorizationCode)
+                }
+            )
+            MemberAuthorizationCodeResult.Success(memberPaymentUrl)
+        } catch (e: Throwable) {
+            if (e is CancellationException) throw e
+            MemberAuthorizationCodeResult.Error(e)
         }
     }
 }

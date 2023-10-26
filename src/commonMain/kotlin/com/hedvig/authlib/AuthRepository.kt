@@ -2,6 +2,7 @@ package com.hedvig.authlib
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 public interface AuthRepository {
     public suspend fun startLoginAttempt(
@@ -24,6 +25,15 @@ public interface AuthRepository {
     public suspend fun revoke(token: String): RevokeResult
 
     public suspend fun migrateOldToken(token: String): AuthTokenResult
+
+    /**
+     * Returns the member's authorization code which can be used to start a connect-payment process
+     * for NO and DK
+     *
+     * [webLocale] The locale string that the web uses to represent each locale.
+     *             Input may look like "se", "se-en", "no-en" etc.
+     */
+    public suspend fun getMemberAuthorizationCode(webLocale: String): MemberAuthorizationCodeResult
 }
 
 @Suppress("unused")
@@ -93,7 +103,6 @@ public sealed interface Grant {
 
 public data class AuthorizationCodeGrant(override val code: String) : Grant
 
-@Serializable
 public data class RefreshTokenGrant(override val code: String) : Grant
 
 @Serializable
@@ -112,3 +121,16 @@ public sealed interface RevokeResult {
     public data class Error(val message: String) : RevokeResult
     public data object Success : RevokeResult
 }
+
+public sealed interface MemberAuthorizationCodeResult {
+    public data class Error(val error: Throwable) : MemberAuthorizationCodeResult
+
+    public data class Success(
+        public val memberPaymentUrl: MemberPaymentUrl,
+    ) : MemberAuthorizationCodeResult
+}
+
+@JvmInline
+public value class MemberPaymentUrl(
+    public val url: String
+) : MemberAuthorizationCodeResult

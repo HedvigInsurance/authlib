@@ -19,3 +19,11 @@ internal val AuthEnvironment.gatewayUrl: String
             AuthEnvironment.PRODUCTION -> "https://gateway.hedvig.com"
         }
     }
+
+internal val AuthEnvironment.webBaseUrl: String
+    get() {
+        return when (this) {
+            AuthEnvironment.STAGING -> "https://dev.hedvigit.com"
+            AuthEnvironment.PRODUCTION -> "https://www.hedvig.com"
+        }
+    }
