@@ -1,8 +1,8 @@
 package com.hedvig.authlib
 
+import com.hedvig.authlib.internal.commonKtorConfiguration
 import com.hedvig.authlib.network.ExchangeAuthorizationCodeRequest
 import com.hedvig.authlib.network.ExchangeRefreshTokenRequest
-import com.hedvig.authlib.network.MemberAuthorizationCodesResponse
 import com.hedvig.authlib.network.MigrateOldTokenRequest
 import com.hedvig.authlib.network.MigrateOldTokenResponse
 import com.hedvig.authlib.network.RevokeRequest
@@ -16,27 +16,16 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.plugins.logging.DEFAULT
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logger
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.serialization.json.Json
 
 private const val POLL_DELAY_MILLIS = 1000L
 
@@ -53,28 +42,7 @@ public class NetworkAuthRepository(
 ) : AuthRepository {
     private val ktorClient: HttpClient = run {
         val httpClientConfig: HttpClientConfig<*>.() -> Unit = {
-            install(ContentNegotiation) {
-                json(
-                    Json {
-                        allowSpecialFloatingPointValues = true
-                        isLenient = true
-                        allowStructuredMapKeys = true
-                        ignoreUnknownKeys = true
-                    }
-                )
-            }
-            install(Logging) {
-                logger = Logger.DEFAULT
-                level = LogLevel.INFO
-            }
-            install(HttpTimeout) {
-                requestTimeoutMillis = 10_000
-            }
-            defaultRequest {
-                additionalHttpHeadersProvider().forEach { entry ->
-                    header(entry.key, entry.value)
-                }
-            }
+            commonKtorConfiguration(additionalHttpHeadersProvider).invoke(this)
         }
         if (httpClientEngine == null) {
             HttpClient {
@@ -229,30 +197,6 @@ public class NetworkAuthRepository(
             return exchange(AuthorizationCodeGrant(responseBody.authorizationCode))
         } catch (e: Exception) {
             AuthTokenResult.Error("Error: ${e.message}")
-        }
-    }
-
-    override suspend fun getMemberAuthorizationCode(
-        webLocale: String,
-    ): MemberAuthorizationCodeResult {
-        return try {
-            val authorizationCode = ktorClient
-                .post("${environment.baseUrl}/member-authorization-codes")
-                .body<MemberAuthorizationCodesResponse>()
-                .authorizationCode
-            val memberPaymentUrl = MemberPaymentUrl(
-                url = buildString {
-                    append(environment.webBaseUrl)
-                    append("/")
-                    append(webLocale)
-                    append("/payment/connect-legacy/start?authorizationCode=")
-                    append(authorizationCode)
-                }
-            )
-            MemberAuthorizationCodeResult.Success(memberPaymentUrl)
-        } catch (e: Throwable) {
-            if (e is CancellationException) throw e
-            MemberAuthorizationCodeResult.Error(e)
         }
     }
 }
