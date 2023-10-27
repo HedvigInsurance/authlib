@@ -1,20 +1,19 @@
-package com.hedvig.authlib
+package com.hedvig.authlib.connectpayment
 
+import com.hedvig.authlib.AuthEnvironment
 import io.ktor.client.engine.okhttp.OkHttpConfig
 import io.ktor.client.engine.okhttp.OkHttpEngine
 import okhttp3.OkHttpClient
 
 @Suppress("FunctionName")
-public fun OkHttpNetworkAuthRepository(
+public fun OkHttpNetworkPaymentRepository(
     environment: AuthEnvironment,
     additionalHttpHeadersProvider: () -> Map<String, String>,
-    callbacks: Callbacks,
     okHttpClientBuilder: OkHttpClient.Builder,
-): AuthRepository {
-    return NetworkAuthRepository(
+): PaymentRepository {
+    return NetworkPaymentRepository(
         environment = environment,
         additionalHttpHeadersProvider = additionalHttpHeadersProvider,
-        callbacks = callbacks,
         httpClientEngine = OkHttpEngine(
             OkHttpConfig().apply { preconfigured = okHttpClientBuilder.build() }
         ),
