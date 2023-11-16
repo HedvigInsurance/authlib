@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.9.10"
 ktor = "2.3.5"
-kotlinxSerialization = "1.6.0"
+kotlinxSerialization = "1.6.1"
 vanniktechMavenPublish = "0.25.3"
 
 [libraries]
