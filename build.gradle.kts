@@ -121,6 +121,11 @@ kmmbridge {
     frameworkName.set("authlib")
     spm()
     mavenPublishArtifacts()
+    versionManager.set(object : co.touchlab.faktory.versionmanager.VersionManager {
+        override fun getVersion(project: Project): String {
+            return authlibVersion
+        }
+    })
     // manualVersions()
 }
 
