@@ -17,6 +17,14 @@ env:
   ORG_GRADLE_PROJECT_HEDVIG_GITHUB_PACKAGES_TOKEN: ${{ secrets.HEDVIG_GITHUB_PACKAGES_TOKEN }}
 
 jobs:
+  publish-spm:
+    permissions:
+      contents: write
+      packages: write
+    uses: touchlab/KMMBridgeGithubWorkflow/.github/workflows/faktorybuildautoversion.yml@v1.1
+    with:
+      jvmVersion: 17
+      versionBaseProperty: LIBRARY_VERSION
   publish-maven:
     name: Release build and publish
     runs-on: macos-12
@@ -70,11 +78,3 @@ jobs:
         run: ./gradlew publishAllPublicationsToMavenRepository
         env:
           ORG_GRADLE_PROJECT_AUTHLIB_VERSION_ALPHA_TIMESTAMP: "${{ steps.time.outputs.time }}"
-  publish-spm:
-    permissions:
-      contents: write
-      packages: write
-    uses: touchlab/KMMBridgeGithubWorkflow/.github/workflows/faktorybuildautoversion.yml@v1.1
-    with:
-      jvmVersion: 17
-      versionBaseProperty: LIBRARY_VERSION
