@@ -1,16 +1,9 @@
-@file:Suppress("UnstableApiUsage")
-
-import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("multiplatform") version "1.9.10"
+    kotlin("multiplatform") version libs.versions.kotlin.get()
     alias(libs.plugins.serialization)
+    alias(libs.plugins.kmmBridge)
     alias(libs.plugins.vanniktechGradleMavenPublish)
 }
-
-group = "com.hedvig.authlib"
 
 repositories {
     mavenCentral()
@@ -19,82 +12,62 @@ repositories {
 kotlin {
     explicitApi()
 
-    jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
-        }
-        withJava()
-        testRuns["test"].executionTask.configure {
-            useJUnitPlatform()
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { target: org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget ->
+        target.binaries.framework {
+            baseName = "authlib"
+            isStatic = true
+            binaryOption("bundleId", "authlib")
         }
     }
-
-    val xcf = XCFramework("authlib")
+    jvm {
+        compilations.configureEach {
+            kotlinOptions.jvmTarget = "1.8"
+        }
+    }
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(libs.ktor.core)
-                implementation(libs.ktor.json)
-                implementation(libs.kotlinx.serializationJson)
-                implementation(libs.ktor.client.contentNegotiation)
-                implementation(libs.ktor.client.logging)
-            }
+        commonMain.dependencies {
+            implementation(libs.ktor.core)
+            implementation(libs.ktor.json)
+            implementation(libs.kotlinx.serializationJson)
+            implementation(libs.ktor.client.contentNegotiation)
+            implementation(libs.ktor.client.logging)
         }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-            }
+        jvmMain.dependencies {
+            api(libs.ktor.okhttp)
         }
-        val jvmMain by getting {
-            dependencies {
-                api(libs.ktor.okhttp)
-            }
-        }
-        val jvmTest by getting
-        val iosMain by creating {
-            dependencies {
-                implementation(libs.ktor.darwin)
-            }
-        }
-        val iosTest by creating
-
-        listOf(
-            iosX64(),
-            iosArm64(),
-            iosSimulatorArm64()
-        ).forEach { target: org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget ->
-            target.binaries.framework {
-                baseName = "authlib"
-                binaryOption("bundleId", "authlib")
-                xcf.add(this)
-            }
-            getByName("${target.targetName}Main") {
-                dependsOn(iosMain)
-            }
-            getByName("${target.targetName}Test") {
-                dependsOn(iosTest)
-            }
+        iosMain.dependencies {
+            implementation(libs.ktor.darwin)
         }
     }
 }
 
+
+val authlibGroupId = extra["AUTHLIB_GROUP"] as String
+val authlibVersion = buildString {
+    val versionString = extra["AUTHLIB_VERSION_NAME"] as String
+    append(versionString)
+    if (versionString.contains("alpha").not()) return@buildString
+    if (project.hasProperty("AUTHLIB_VERSION_ALPHA_TIMESTAMP").not()) return@buildString
+    val alphaTimestamp = project.findProperty("AUTHLIB_VERSION_ALPHA_TIMESTAMP") as String
+    if (alphaTimestamp.isBlank()) return@buildString
+    append("-")
+    append(alphaTimestamp)
+}
+version = authlibVersion
+group = authlibGroupId
+
+@Suppress("UnstableApiUsage")
 mavenPublishing {
-    val groupId = "com.hedvig.authlib"
-    val version = buildString {
-        val versionString = extra["AUTHLIB_VERSION_NAME"] as String
-        append(versionString)
-        if (versionString.contains("alpha").not()) return@buildString
-        if (project.hasProperty("AUTHLIB_VERSION_ALPHA_TIMESTAMP").not()) return@buildString
-        val alphaTimestamp = project.findProperty("AUTHLIB_VERSION_ALPHA_TIMESTAMP") as String
-        if (alphaTimestamp.isBlank()) return@buildString
-        append("-")
-        append(alphaTimestamp)
-    }
     coordinates(
-        groupId = groupId,
+        groupId = authlibGroupId,
         artifactId = "authlib",
-        version = version,
+        version = authlibVersion,
     )
     pom {
         name.set("authlib")
@@ -140,6 +113,18 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.withType<KotlinJvmCompile>().configureEach {
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
 }
+
+kmmbridge {
+    frameworkName.set("authlib")
+    spm()
+    manualVersions()
+}
+
+//tasks.register("printAuthlibVersion") {
+//    doLast {
+//        println(authlibVersion)
+//    }
+//}

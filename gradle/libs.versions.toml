@@ -1,7 +1,8 @@
 [versions]
-kotlin = "1.9.10"
-ktor = "2.3.5"
-kotlinxSerialization = "1.6.0"
+kotlin = "1.9.20"
+ktor = "2.3.6"
+kotlinxSerialization = "1.6.1"
+kmmBridge = "0.5.1"
 vanniktechMavenPublish = "0.25.3"
 
 [libraries]
@@ -14,5 +15,6 @@ ktor-client-contentNegotiation = { module = "io.ktor:ktor-client-content-negotia
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 
 [plugins]
+kmmBridge = { id = "co.touchlab.kmmbridge", version.ref = "kmmBridge" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 vanniktechGradleMavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
