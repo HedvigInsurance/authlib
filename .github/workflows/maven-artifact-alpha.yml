@@ -68,12 +68,6 @@ jobs:
 #        with:
 #          package-name:
 
-      - name: Publish XCFramework using KMMBridge
-        uses: touchlab/KMMBridgeGithubWorkflow/.github/workflows/faktorybuildautoversion.yml@v1.1
-        with:
-          jvmVersion: 17
-          versionBaseProperty: AUTHLIB_VERSION_NAME
-
       - name: Publish to GitHub packages
         run: ./gradlew publishAllPublicationsToMavenRepository
         env:
