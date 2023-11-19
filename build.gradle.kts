@@ -121,7 +121,7 @@ kmmbridge {
     frameworkName.set("authlib")
     spm()
     mavenPublishArtifacts()
-    manualVersions()
+    // manualVersions()
 }
 
 //tasks.register("printAuthlibVersion") {
