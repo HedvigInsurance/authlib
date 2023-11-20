@@ -59,10 +59,8 @@ jobs:
         env:
           SPM_VERSION: "${{ steps.versionprop.outputs.propVal }}${{ steps.time.outputs.time }}"
         run: |
-          spmWithoutAlpha=`echo "${{ steps.versionprop.outputs.propVal }}" | sed 's/-alpha//`
-          echo "::set-output name=SPM_VERSION::$(
-            ${spmWithoutAlpha}${{ steps.time.outputs.time }}
-          )"
+          spmWithoutAlpha=$(echo "${{ steps.versionprop.outputs.propVal }}" | sed 's/-alpha//`)
+          echo "::set-output name=SPM_VERSION::${spmWithoutAlpha}${{ steps.time.outputs.time }}"
 
       - name: Build
         id: gradle
