@@ -30,11 +30,6 @@ jobs:
         with:
           java-version: 17
           distribution: 'zulu'
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          cache-read-only: false
-          gradle-home-cache-cleanup: true
 
       - name: Generate alpha version timestamp
         id: time
@@ -64,7 +59,10 @@ jobs:
 
       - name: Build
         id: gradle
-        uses: gradle/gradle-build-action@v2.3.3
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: false
+          gradle-home-cache-cleanup: true
         env:
           ORG_GRADLE_PROJECT_AUTHLIB_VERSION_ALPHA_TIMESTAMP: "${{ steps.time.outputs.time }}"
 
