@@ -119,6 +119,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEa
 
 kmmbridge {
     frameworkName.set("authlib")
-    spm()
+    spm(project.rootDir.absolutePath)
     mavenPublishArtifacts()
 }
