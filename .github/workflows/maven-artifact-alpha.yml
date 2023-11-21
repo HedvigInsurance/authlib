@@ -91,6 +91,7 @@ jobs:
         run: ./gradlew kmmBridgePublish -PAUTO_VERSION=${{ steps.generateSPMversion.outputs.SPM_VERSION }} -PENABLE_PUBLISHING=true -PGITHUB_PUBLISH_TOKEN=${{ secrets.GITHUB_TOKEN }} -PGITHUB_REPO=${{ github.repository }} --no-daemon --stacktrace
         env:
           GRADLE_OPTS: -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=512m"
+          ORG_GRADLE_PROJECT_AUTHLIB_VERSION_ALPHA_TIMESTAMP: "${{ steps.time.outputs.time }}"
 
       - uses: touchlab/autoversion-finishrelease@main
         id: autoversion-finishrelease
