@@ -1,23 +1,29 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.3
 import PackageDescription
 
+// BEGIN KMMBRIDGE VARIABLES BLOCK (do not edit)
+let remoteKotlinUrl = "https://maven.pkg.github.com/HedvigInsurance/authlib/com/hedvig/authlib/authlib-kmmbridge/1.3.6/authlib-kmmbridge-1.3.6.zip"
+let remoteKotlinChecksum = "95b95d8043a0476957f8f49659730b798fd0c9255c57e0f773157c694b2722a6"
+let packageName = "authlib"
+// END KMMBRIDGE BLOCK
+
 let package = Package(
-    name: "authlib",
+    name: packageName,
     platforms: [
-        .iOS(.v14),
+        .iOS(.v13)
     ],
     products: [
         .library(
-            name: "authlib",
-            targets: ["authlib"]
-        )
+            name: packageName,
+            targets: [packageName]
+        ),
     ],
-    dependencies: [],
     targets: [
         .binaryTarget(
-            name: "authlib",
-            url: "https://github.com/HedvigInsurance/authlib/releases/download/v1.3.3/authlib.xcframework.zip",// authlib URL
-            checksum: "7a9084bc836162c7035f6844d32bb6d9777304e555b7e6062a6631a3c9cea7ca"// authlib Checksum
+            name: packageName,
+            url: remoteKotlinUrl,
+            checksum: remoteKotlinChecksum
         )
+        ,
     ]
 )
