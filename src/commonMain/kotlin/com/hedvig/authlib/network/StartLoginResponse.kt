@@ -5,6 +5,7 @@ import com.hedvig.authlib.StatusUrl
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -30,7 +31,9 @@ internal data class StartLoginResponse(
     @Serializable
     data class OtpProperties(
         val resendUrl: String,
-        val verifyUrl: String
+        val verifyUrl: String,
+        @SerialName("email")
+        val maskedEmail: String?,
     )
 }
 
@@ -57,7 +60,8 @@ private fun StartLoginResponse.toAuthAttemptResult() = when {
         id = id,
         statusUrl = StatusUrl(statusUrl),
         resendUrl = otpProperties.resendUrl,
-        verifyUrl = otpProperties.verifyUrl
+        verifyUrl = otpProperties.verifyUrl,
+        maskedEmail = otpProperties.maskedEmail,
     )
     else -> AuthAttemptResult.Error(
         message = "Could not find properties on start login response"

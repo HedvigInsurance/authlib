@@ -24,12 +24,12 @@ internal fun HttpRequestBuilder.buildStartLoginRequest(
     callbacks: Callbacks
 ) {
     val body = StartLoginRequest(
-        loginMethod.name,
-        market,
-        personalNumber,
-        email,
-        callbacks.successUrl,
-        callbacks.failureUrl
+        method = loginMethod.name,
+        country = market,
+        personalNumber = personalNumber,
+        email = email,
+        callbackSuccess = callbacks.successUrl,
+        callbackFailure = callbacks.failureUrl
     )
 
     contentType(ContentType.Application.Json)

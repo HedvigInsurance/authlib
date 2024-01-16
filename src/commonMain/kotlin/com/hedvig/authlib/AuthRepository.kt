@@ -53,7 +53,8 @@ public sealed interface AuthAttemptResult {
         val id: String,
         val statusUrl: StatusUrl,
         val resendUrl: String,
-        val verifyUrl: String
+        val verifyUrl: String,
+        val maskedEmail: String?,
     ) : AuthAttemptResult
 }
 
