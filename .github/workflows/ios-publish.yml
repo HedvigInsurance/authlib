@@ -37,6 +37,9 @@ jobs:
         with:
           path: ~/.konan/
           key: konan
+          
+      - name: Install brew
+        run: brew install hub
       - uses: burrunan/gradle-cache-action@v1
         name: Build XCFramework
         env:
