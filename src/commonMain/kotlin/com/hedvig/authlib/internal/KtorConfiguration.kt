@@ -29,9 +29,6 @@ internal fun commonKtorConfiguration(
         logger = Logger.DEFAULT
         level = LogLevel.INFO
     }
-    install(HttpTimeout) {
-        requestTimeoutMillis = 10_000
-    }
     defaultRequest {
         additionalHttpHeadersProvider().forEach { entry ->
             header(entry.key, entry.value)
