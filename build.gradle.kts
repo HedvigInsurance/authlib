@@ -1,3 +1,5 @@
+import co.touchlab.faktory.versionmanager.ManualVersionManager
+
 plugins {
     kotlin("multiplatform") version libs.versions.kotlin.get()
     alias(libs.plugins.serialization)
@@ -121,4 +123,5 @@ kmmbridge {
     frameworkName.set("authlib")
     spm(project.rootDir.absolutePath)
     mavenPublishArtifacts()
+    versionManager.set( ManualVersionManager)
 }
