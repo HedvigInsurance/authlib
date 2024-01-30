@@ -26,7 +26,10 @@ internal suspend fun HttpResponse.toAuthTokenResult(): AuthTokenResult {
         val response = body<ExchangeResponse>()
         response.toAuthAttemptResult()
     } else {
-        AuthTokenResult.Error(bodyAsText())
+        AuthTokenResult.Error.BackendErrorResponse(
+            status.value,
+            "Description:${status.description}. Body as text: ${bodyAsText()}",
+        )
     }
 }
 

@@ -16,6 +16,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.*
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -23,6 +24,8 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.utils.io.errors.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -163,8 +166,12 @@ public class NetworkAuthRepository(
                     response.toAuthTokenResult()
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: IOException) {
+            AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
         } catch (e: Exception) {
-            AuthTokenResult.Error("Error: ${e.message}")
+            AuthTokenResult.Error.UnknownError("Error: ${e.message}")
         }
     }
 
@@ -195,8 +202,12 @@ public class NetworkAuthRepository(
             val responseBody = response.body<MigrateOldTokenResponse>()
 
             return exchange(AuthorizationCodeGrant(responseBody.authorizationCode))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: IOException) {
+            AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
         } catch (e: Exception) {
-            AuthTokenResult.Error("Error: ${e.message}")
+            AuthTokenResult.Error.UnknownError("Error: ${e.message}")
         }
     }
 }

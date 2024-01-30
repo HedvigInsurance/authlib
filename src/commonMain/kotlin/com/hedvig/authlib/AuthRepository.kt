@@ -61,7 +61,11 @@ public sealed interface AuthAttemptResult {
 public data class StatusUrl(val url: String)
 
 public sealed interface AuthTokenResult {
-    public data class Error(val message: String) : AuthTokenResult
+    public sealed interface Error {
+        public data class BackendErrorResponse(val httpStatusValue: Int, val message: String) : AuthTokenResult
+        public data class IOError(val message: String) : AuthTokenResult
+        public data class UnknownError(val message: String) : AuthTokenResult
+    }
 
     public data class Success(
         val accessToken: AccessToken,
