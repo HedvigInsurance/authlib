@@ -76,8 +76,13 @@ public class NetworkAuthRepository(
             }
 
             return response.toAuthAttemptResult()
+        } catch (e: IOException) {
+            AuthAttemptResult.Error.IOError("IOError: ${e.message}")
         } catch (e: Exception) {
-            AuthAttemptResult.Error("Error: ${e.message}")
+            if (e is CancellationException) {
+                throw e
+            }
+            AuthAttemptResult.Error.UnknownError("Error: ${e.message}")
         }
     }
 

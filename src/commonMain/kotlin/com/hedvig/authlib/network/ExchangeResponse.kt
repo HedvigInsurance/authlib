@@ -27,8 +27,8 @@ internal suspend fun HttpResponse.toAuthTokenResult(): AuthTokenResult {
         response.toAuthAttemptResult()
     } else {
         AuthTokenResult.Error.BackendErrorResponse(
-            status.value,
-            "Description:${status.description}. Body as text: ${bodyAsText()}",
+            message = "Description:${status.description}:${status.value}. Body as text: ${bodyAsText()}",
+            httpStatusValue = status.value,
         )
     }
 }

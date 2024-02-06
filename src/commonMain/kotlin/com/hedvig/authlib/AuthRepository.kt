@@ -33,9 +33,12 @@ public enum class LoginMethod {
 
 public sealed interface AuthAttemptResult {
 
-    public data class Error(
-        val message: String
-    ) : AuthAttemptResult
+    public sealed interface Error : AuthAttemptResult {
+        public data class Localised(val reason: String) : Error
+        public data class BackendErrorResponse(val message: String, val httpStatusValue: Int) : Error
+        public data class IOError(val message: String) : Error
+        public data class UnknownError(val message: String) : Error
+    }
 
     public data class BankIdProperties(
         val id: String,
@@ -62,7 +65,7 @@ public data class StatusUrl(val url: String)
 
 public sealed interface AuthTokenResult {
     public sealed interface Error: AuthTokenResult {
-        public data class BackendErrorResponse(val httpStatusValue: Int, val message: String) : Error
+        public data class BackendErrorResponse(val message: String, val httpStatusValue: Int) : Error
         public data class IOError(val message: String) : Error
         public data class UnknownError(val message: String) : Error
     }
