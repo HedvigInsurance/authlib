@@ -1,7 +1,6 @@
 name: Publish common dev Artifacts to GitHub packages
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - 'main'

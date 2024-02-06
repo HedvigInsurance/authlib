@@ -1,7 +1,6 @@
 name: Publish common release Artifact to GitHub packages and make GitHub release
 
 on:
-  workflow_dispatch: {}
   push:
     tags:
       - '**'
