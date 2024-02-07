@@ -5,10 +5,10 @@ import com.hedvig.authlib.StatusUrl
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Serializable
 internal sealed interface StartLoginResponse {
     @Serializable
     data class Failure(val reason: String) : StartLoginResponse
@@ -45,42 +45,53 @@ internal sealed interface StartLoginResponse {
 
 internal suspend fun HttpResponse.toAuthAttemptResult(): AuthAttemptResult {
     return if (status == HttpStatusCode.OK) {
-        body<StartLoginResponse>().toAuthAttemptResult()
+        val startLoginSuccess = try {
+            body<StartLoginResponse.Success>()
+        } catch (_: JsonConvertException) {
+            null
+        }
+        if (startLoginSuccess != null) {
+            return startLoginSuccess.toAuthAttemptResult()
+        }
+        val startLoginFailure = try {
+            body<StartLoginResponse.Failure>()
+        } catch (_: JsonConvertException) {
+            null
+        }
+        if (startLoginFailure != null) {
+            println("Authlib returning error localised:$startLoginFailure")
+            return AuthAttemptResult.Error.Localised(startLoginFailure.reason)
+        }
+        AuthAttemptResult.Error.UnknownError(
+            "Login attempt failed, backend response could not be mapped to StartLoginResponse"
+        )
     } else {
         AuthAttemptResult.Error.BackendErrorResponse(message = bodyAsText(), httpStatusValue = status.value)
     }
 }
 
-private fun StartLoginResponse.toAuthAttemptResult(): AuthAttemptResult = when(this) {
-    is StartLoginResponse.Failure -> {
-        AuthAttemptResult.Error.Localised(this.reason)
-    }
+private fun StartLoginResponse.Success.toAuthAttemptResult(): AuthAttemptResult = when {
+    seBankIdProperties != null -> AuthAttemptResult.BankIdProperties(
+        id = id,
+        statusUrl = StatusUrl(statusUrl),
+        autoStartToken = seBankIdProperties.autoStartToken
+    )
 
-    is StartLoginResponse.Success -> {
-        when {
-            seBankIdProperties != null -> AuthAttemptResult.BankIdProperties(
-                id = id,
-                statusUrl = StatusUrl(statusUrl),
-                autoStartToken = seBankIdProperties.autoStartToken
-            )
+    zignSecProperties != null -> AuthAttemptResult.ZignSecProperties(
+        id = id,
+        statusUrl = StatusUrl(statusUrl),
+        redirectUrl = zignSecProperties.redirectUrl
+    )
 
-            zignSecProperties != null -> AuthAttemptResult.ZignSecProperties(
-                id = id,
-                statusUrl = StatusUrl(statusUrl),
-                redirectUrl = zignSecProperties.redirectUrl
-            )
+    otpProperties != null -> AuthAttemptResult.OtpProperties(
+        id = id,
+        statusUrl = StatusUrl(statusUrl),
+        resendUrl = otpProperties.resendUrl,
+        verifyUrl = otpProperties.verifyUrl,
+        maskedEmail = otpProperties.maskedEmail,
+    )
 
-            otpProperties != null -> AuthAttemptResult.OtpProperties(
-                id = id,
-                statusUrl = StatusUrl(statusUrl),
-                resendUrl = otpProperties.resendUrl,
-                verifyUrl = otpProperties.verifyUrl,
-                maskedEmail = otpProperties.maskedEmail,
-            )
-
-            else -> AuthAttemptResult.Error.UnknownError(
-                message = "Could not find properties on start login response"
-            )
-        }
-    }
+    else -> AuthAttemptResult.Error.UnknownError(
+        message = "Could not find properties on start login response"
+    )
 }
