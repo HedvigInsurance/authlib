@@ -23,6 +23,7 @@ kotlin {
             baseName = "authlib"
             isStatic = true
             binaryOption("bundleId", "authlib")
+            freeCompilerArgs += "-Xadd-light-debug=enable"
         }
     }
     jvm {
