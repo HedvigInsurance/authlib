@@ -18,7 +18,7 @@ env:
 jobs:
   publish-spm:
     concurrency: "kmmbridgepublish-${{ github.repository }}"
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - name: Checkout the repo with tags
         uses: actions/checkout@v4
@@ -114,7 +114,7 @@ jobs:
           branches: "build-${{ steps.generateSPMversion.outputs.SPM_VERSION }}"
   publish-maven:
     name: Release build and publish
-    runs-on: macos-12
+    runs-on: macos-13
     permissions:
       contents: write
       packages: write
