@@ -99,6 +99,7 @@ mavenPublishing {
     }
 }
 
+// This replaces the need for `addGithubPackagesRepository` from KMMBridge
 publishing {
     repositories {
         maven {
@@ -124,5 +125,5 @@ kmmbridge {
     frameworkName.set("authlib")
     spm(project.rootDir.absolutePath)
     mavenPublishArtifacts()
-    versionManager.set( ManualVersionManager)
+    versionManager.set(ManualVersionManager)
 }
