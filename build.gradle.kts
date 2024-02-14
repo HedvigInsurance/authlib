@@ -21,7 +21,6 @@ kotlin {
     ).forEach { target: org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget ->
         target.binaries.framework {
             baseName = "authlib"
-            isStatic = true
             binaryOption("bundleId", "authlib")
         }
     }
