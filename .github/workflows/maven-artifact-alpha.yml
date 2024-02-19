@@ -32,9 +32,9 @@ jobs:
 
       - name: Generate alpha version timestamp
         id: time
-        uses: nanzm/get-time-action@v1.1
+        uses: nanzm/get-time-action@v2
         with:
-          timeZone: 0
+          timeZone: UTC
           format: 'YYYYMMDDHHmmss'
       - uses: touchlab/read-property@main
         id: versionprop
@@ -132,9 +132,9 @@ jobs:
 
       - name: Generate alpha version timestamp
         id: time
-        uses: nanzm/get-time-action@v1.1
+        uses: nanzm/get-time-action@v2
         with:
-          timeZone: 0
+          timeZone: UTC
           format: 'YYYY-MM-DD-HH-mm-ss'
 
       - name: Print tag to be generated and save into env
