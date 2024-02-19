@@ -32,7 +32,7 @@ jobs:
 
       - name: Generate alpha version timestamp
         id: time
-        uses: nanzm/get-time-action@v2
+        uses: nanzm/get-time-action@v2.0
         with:
           timeZone: UTC
           format: 'YYYYMMDDHHmmss'
@@ -132,7 +132,7 @@ jobs:
 
       - name: Generate alpha version timestamp
         id: time
-        uses: nanzm/get-time-action@v2
+        uses: nanzm/get-time-action@v2.0
         with:
           timeZone: UTC
           format: 'YYYY-MM-DD-HH-mm-ss'
