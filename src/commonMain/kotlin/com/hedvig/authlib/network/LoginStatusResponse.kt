@@ -17,7 +17,6 @@ internal data class LoginStatusResponse(
 
     @Serializable
     data class BankIdProperties(
-        val autoStartToken: String,
         val liveQrCodeData: String
     )
     enum class LoginStatus {
