@@ -22,8 +22,6 @@ public interface AuthRepository {
     public suspend fun exchange(grant: Grant): AuthTokenResult
 
     public suspend fun revoke(token: String): RevokeResult
-
-    public suspend fun migrateOldToken(token: String): AuthTokenResult
 }
 
 @Suppress("unused")

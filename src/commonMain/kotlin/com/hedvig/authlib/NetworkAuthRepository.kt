@@ -196,23 +196,4 @@ public class NetworkAuthRepository(
             RevokeResult.Error("Error: ${e.message}")
         }
     }
-
-    override suspend fun migrateOldToken(token: String): AuthTokenResult {
-        return try {
-            val response = ktorClient.post("${environment.gatewayUrl}/migrate-auth-token") {
-                contentType(ContentType.Application.Json)
-                setBody(MigrateOldTokenRequest(token))
-            }
-
-            val responseBody = response.body<MigrateOldTokenResponse>()
-
-            return exchange(AuthorizationCodeGrant(responseBody.authorizationCode))
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: IOException) {
-            AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
-        } catch (e: Exception) {
-            AuthTokenResult.Error.UnknownError("Error: ${e.message}")
-        }
-    }
 }
