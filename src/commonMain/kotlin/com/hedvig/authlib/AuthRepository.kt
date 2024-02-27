@@ -79,7 +79,7 @@ public sealed interface AuthTokenResult {
 public sealed interface LoginStatusResult {
     public data class Exception(val message: String) : LoginStatusResult
     public data class Failed(val message: String) : LoginStatusResult
-    public data class Pending(val statusMessage: String) : LoginStatusResult
+    public data class Pending(val statusMessage: String, val liveQrCodeData: String?) : LoginStatusResult
     public data class Completed(val authorizationCode: AuthorizationCodeGrant) : LoginStatusResult
 }
 

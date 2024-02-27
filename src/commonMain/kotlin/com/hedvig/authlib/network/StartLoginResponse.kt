@@ -24,7 +24,8 @@ internal sealed interface StartLoginResponse {
     ) : StartLoginResponse {
         @Serializable
         data class BankIdProperties(
-            val autoStartToken: String
+            val autoStartToken: String,
+            val liveQrCodeData: String
         )
 
         @Serializable
