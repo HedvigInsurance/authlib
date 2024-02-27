@@ -12,7 +12,13 @@ internal data class LoginStatusResponse(
     val status: LoginStatus,
     val statusText: String,
     val authorizationCode: String?,
+    val seBankIdProperties: BankIdProperties?
 ) {
+
+    @Serializable
+    data class BankIdProperties(
+        val liveQrCodeData: String
+    )
     enum class LoginStatus {
         PENDING, FAILED, COMPLETED
     }
@@ -29,7 +35,7 @@ internal suspend fun HttpResponse.toLoginStatusResult(): LoginStatusResult {
 }
 
 private fun LoginStatusResponse.toLoginStatusResult(): LoginStatusResult = when (status) {
-    LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(statusText)
+    LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(statusText, seBankIdProperties?.liveQrCodeData)
     LoginStatusResponse.LoginStatus.FAILED -> LoginStatusResult.Failed(statusText)
     LoginStatusResponse.LoginStatus.COMPLETED -> {
         require(authorizationCode != null) {

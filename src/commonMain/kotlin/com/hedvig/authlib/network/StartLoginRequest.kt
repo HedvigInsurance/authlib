@@ -34,4 +34,10 @@ internal fun HttpRequestBuilder.buildStartLoginRequest(
 
     contentType(ContentType.Application.Json)
     setBody(body)
+    when (loginMethod) {
+        LoginMethod.SE_BANKID -> {
+            headers["hedvig-bankid-v6"] = "true"
+        }
+        else -> {}
+    }
 }
