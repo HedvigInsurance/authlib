@@ -74,7 +74,8 @@ private fun StartLoginResponse.Success.toAuthAttemptResult(): AuthAttemptResult 
     seBankIdProperties != null -> AuthAttemptResult.BankIdProperties(
         id = id,
         statusUrl = StatusUrl(statusUrl),
-        autoStartToken = seBankIdProperties.autoStartToken
+        autoStartToken = seBankIdProperties.autoStartToken,
+        liveQrCodeData = seBankIdProperties.liveQrCodeData
     )
 
     zignSecProperties != null -> AuthAttemptResult.ZignSecProperties(

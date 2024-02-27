@@ -43,7 +43,8 @@ public sealed interface AuthAttemptResult {
     public data class BankIdProperties(
         val id: String,
         val statusUrl: StatusUrl,
-        val autoStartToken: String
+        val autoStartToken: String,
+        val liveQrCodeData: String
     ) : AuthAttemptResult
 
     public data class ZignSecProperties(
