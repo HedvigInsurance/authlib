@@ -1,6 +1,5 @@
 package com.hedvig.authlib.network
 
-import com.hedvig.authlib.Callbacks
 import com.hedvig.authlib.LoginMethod
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -12,8 +11,6 @@ internal data class StartLoginRequest(
     val country: String,
     val personalNumber: String?,
     val email: String?,
-    val callbackSuccess: String,
-    val callbackFailure: String
 )
 
 internal fun HttpRequestBuilder.buildStartLoginRequest(
@@ -21,7 +18,6 @@ internal fun HttpRequestBuilder.buildStartLoginRequest(
     market: String,
     personalNumber: String?,
     email: String?,
-    callbacks: Callbacks
 ) {
     contentType(ContentType.Application.Json)
     setBody(
@@ -30,8 +26,6 @@ internal fun HttpRequestBuilder.buildStartLoginRequest(
             country = market,
             personalNumber = personalNumber,
             email = email,
-            callbackSuccess = callbacks.successUrl,
-            callbackFailure = callbacks.failureUrl
         )
     )
     if (loginMethod == LoginMethod.SE_BANKID) {
