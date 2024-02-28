@@ -23,21 +23,18 @@ internal fun HttpRequestBuilder.buildStartLoginRequest(
     email: String?,
     callbacks: Callbacks
 ) {
-    val body = StartLoginRequest(
-        method = loginMethod.name,
-        country = market,
-        personalNumber = personalNumber,
-        email = email,
-        callbackSuccess = callbacks.successUrl,
-        callbackFailure = callbacks.failureUrl
-    )
-
     contentType(ContentType.Application.Json)
-    setBody(body)
-    when (loginMethod) {
-        LoginMethod.SE_BANKID -> {
-            headers["hedvig-bankid-v6"] = "true"
-        }
-        else -> {}
+    setBody(
+        StartLoginRequest(
+            method = loginMethod.name,
+            country = market,
+            personalNumber = personalNumber,
+            email = email,
+            callbackSuccess = callbacks.successUrl,
+            callbackFailure = callbacks.failureUrl
+        )
+    )
+    if (loginMethod == LoginMethod.SE_BANKID) {
+        headers["hedvig-bankid-v6"] = "true"
     }
 }
