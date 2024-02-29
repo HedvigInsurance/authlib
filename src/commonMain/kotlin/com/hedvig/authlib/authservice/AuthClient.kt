@@ -2,16 +2,16 @@ package com.hedvig.authlib.authservice
 
 import com.hedvig.authlib.AuthEnvironment
 import com.hedvig.authlib.StatusUrl
-import com.hedvig.authlib.authservice.model.otp.login.LoginOtpInput
-import com.hedvig.authlib.authservice.model.otp.login.LoginOtpResponse
-import com.hedvig.authlib.authservice.model.otp.swedenlogin.LoginOtpSwedenInput
-import com.hedvig.authlib.authservice.model.otp.swedenlogin.LoginOtpSwedenResponse
-import com.hedvig.authlib.authservice.model.otp.verify.OtpVerifyInput
-import com.hedvig.authlib.authservice.model.otp.verify.OtpVerifyResponse
-import com.hedvig.authlib.authservice.swedenlogin.LoginSwedenInput
-import com.hedvig.authlib.authservice.swedenlogin.LoginSwedenResponse
+import com.hedvig.authlib.authservice.loginotp.LoginOtpInput
+import com.hedvig.authlib.authservice.loginotp.LoginOtpResponse
+import com.hedvig.authlib.authservice.loginotpsweden.LoginOtpSwedenInput
+import com.hedvig.authlib.authservice.loginotpsweden.LoginOtpSwedenResponse
+import com.hedvig.authlib.authservice.loginstatus.LoginStatusResponse
+import com.hedvig.authlib.authservice.loginsweden.LoginSwedenInput
+import com.hedvig.authlib.authservice.loginsweden.LoginSwedenResponse
+import com.hedvig.authlib.authservice.otpverify.OtpVerifyInput
+import com.hedvig.authlib.authservice.otpverify.OtpVerifyResponse
 import com.hedvig.authlib.baseUrl
-import com.hedvig.authlib.authservice.model.swedenstatus.LoginStatusResponse
 import com.hedvig.authlib.url.OtpResendUrl
 import com.hedvig.authlib.url.OtpVerifyUrl
 import io.ktor.client.*
@@ -88,7 +88,3 @@ internal class AuthService(
         return response.status == HttpStatusCode.OK
     }
 }
-
-
-
-

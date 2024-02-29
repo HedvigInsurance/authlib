@@ -1,10 +1,5 @@
-package com.hedvig.authlib.authservice.model.swedenstatus
+package com.hedvig.authlib.authservice.loginstatus
 
-import com.hedvig.authlib.AuthorizationCodeGrant
-import com.hedvig.authlib.LoginStatusResult
-import io.ktor.client.call.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

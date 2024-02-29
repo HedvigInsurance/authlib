@@ -1,4 +1,4 @@
-package com.hedvig.authlib.authservice.model.otp.swedenlogin
+package com.hedvig.authlib.authservice.loginotp
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -6,23 +6,28 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
-internal data class LoginOtpSwedenInput(
-    val email: String,
+internal data class LoginOtpInput(
+    val country: OtpLoginCountry,
+    val personalNumber: String,
 ) {
     val method: String = "OTP"
+
+    enum class OtpLoginCountry {
+        NO, DK
+    }
 }
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("result")
 @Serializable
-internal sealed interface LoginOtpSwedenResponse {
+internal sealed interface LoginOtpResponse {
     @Serializable
     @SerialName("success")
     data class Success(
         val id: String,
         val statusUrl: String,
         val otpProperties: OtpProperties
-    ) : LoginOtpSwedenResponse {
+    ) : LoginOtpResponse {
         @Serializable
         data class OtpProperties(
             val resendUrl: String,
@@ -34,5 +39,5 @@ internal sealed interface LoginOtpSwedenResponse {
 
     @Serializable
     @SerialName("error")
-    data class Error(val reason: String) : LoginOtpSwedenResponse
+    data class Error(val reason: String) : LoginOtpResponse
 }

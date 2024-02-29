@@ -1,17 +1,15 @@
-package com.hedvig.authlib.authservice.swedenlogin
+package com.hedvig.authlib.authservice.loginsweden
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
+
 @Serializable
-internal data class LoginSwedenInput(
-    val personalNumber: String?
-) {
+internal data class LoginSwedenInput(val personalNumber: String?) {
     val method: String = "SE_BANKID"
 }
-
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("result")
