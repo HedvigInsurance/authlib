@@ -79,4 +79,25 @@ internal class AuthService(
         val response = ktorClient.post("${environment.baseUrl}${otpResendUrl.url}")
         return response.status == HttpStatusCode.OK
     }
+
+    @Throws(NoTransformationFoundException::class, Throwable::class)
+    suspend fun grantToken(grantTokenInput: GrantTokenInput): GrantTokenOutput {
+        val response = ktorClient.post("${environment.baseUrl}/oauth/token") {
+            contentType(ContentType.Application.Json)
+            setBody(grantTokenInput)
+        }
+        return response.body<GrantTokenOutput>()
+    }
+
+    /**
+     * @return [true] if the request had a status 200 as a response
+     */
+    @Throws(Throwable::class)
+    suspend fun revokeToken(token: String): Boolean {
+        val response = ktorClient.post("${environment.baseUrl}/oauth/revoke") {
+            contentType(ContentType.Application.Json)
+            setBody(RevokeTokenInput(token))
+        }
+        return response.status == HttpStatusCode.OK
+    }
 }
