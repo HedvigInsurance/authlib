@@ -7,6 +7,7 @@ import com.hedvig.authlib.network.RevokeRequest
 import com.hedvig.authlib.network.buildStartLoginRequest
 import com.hedvig.authlib.network.toAuthAttemptResult
 import com.hedvig.authlib.network.toSubmitOtpResult
+import com.hedvig.authlib.url.OtpResendUrl
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
@@ -109,15 +110,19 @@ public class NetworkAuthRepository(
 
     override suspend fun resendOtp(resendUrl: String): ResendOtpResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}$resendUrl")
-
-            if (response.status == HttpStatusCode.OK) {
+            val succeeded = authService.otpResend(OtpResendUrl(resendUrl))
+            if (succeeded) {
                 ResendOtpResult.Success
             } else {
-                ResendOtpResult.Error("Error: ${response.bodyAsText()}")
+                ResendOtpResult.Error("authService.otpResend($resendUrl) resulted in a non 200 response")
             }
-        } catch (e: Exception) {
-            ResendOtpResult.Error("Error: ${e.message}")
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> ResendOtpResult.Error("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> ResendOtpResult.Error(e.message ?: "unknown error")
+                else -> ResendOtpResult.Error("Error: ${e.message}")
+            }
         }
     }
 
