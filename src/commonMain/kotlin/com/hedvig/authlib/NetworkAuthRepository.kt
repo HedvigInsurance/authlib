@@ -144,18 +144,19 @@ public class NetworkAuthRepository(
 
     override suspend fun revoke(token: String): RevokeResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}/oauth/revoke") {
-                contentType(ContentType.Application.Json)
-                setBody(RevokeRequest(token))
-            }
-
-            if (response.status == HttpStatusCode.OK) {
+            val succeeded = authService.revokeToken(token)
+            if (succeeded) {
                 RevokeResult.Success
             } else {
-                RevokeResult.Error("Could not logout: ${response.bodyAsText()}")
+                RevokeResult.Error("authService.revokeToken($token) resulted in a non 200 response")
             }
-        } catch (e: Exception) {
-            RevokeResult.Error("Error: ${e.message}")
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> RevokeResult.Error("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> RevokeResult.Error(e.message ?: "unknown error")
+                else -> RevokeResult.Error("Error: ${e.message}")
+            }
         }
     }
 }
