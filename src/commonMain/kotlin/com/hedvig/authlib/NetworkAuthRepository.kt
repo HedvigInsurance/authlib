@@ -1,23 +1,18 @@
 package com.hedvig.authlib
 
+import com.hedvig.authlib.authservice.AuthService
+import com.hedvig.authlib.authservice.model.GrantTokenInput
 import com.hedvig.authlib.internal.commonKtorConfiguration
-import com.hedvig.authlib.network.ExchangeAuthorizationCodeRequest
-import com.hedvig.authlib.network.ExchangeRefreshTokenRequest
 import com.hedvig.authlib.network.RevokeRequest
 import com.hedvig.authlib.network.buildStartLoginRequest
 import com.hedvig.authlib.network.toAuthAttemptResult
-import com.hedvig.authlib.network.toAuthTokenResult
 import com.hedvig.authlib.network.toSubmitOtpResult
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -45,6 +40,7 @@ public class NetworkAuthRepository(
             }
         }
     }
+    private val authService = AuthService(environment, ktorClient)
 
     override suspend fun startLoginAttempt(
         loginMethod: LoginMethod,
@@ -126,44 +122,23 @@ public class NetworkAuthRepository(
     }
 
     override suspend fun exchange(grant: Grant): AuthTokenResult {
-        val submitUrl = "${environment.baseUrl}/oauth/token"
-
+        val grantTokenInput = when (grant) {
+            is AuthorizationCodeGrant -> GrantTokenInput.AuthorizationCode(grant.code)
+            is RefreshTokenGrant -> GrantTokenInput.RefreshToken(grant.code)
+        }
         return try {
-            when (grant) {
-                is AuthorizationCodeGrant -> {
-                    val response = ktorClient.post(submitUrl) {
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            ExchangeAuthorizationCodeRequest(
-                                authorizationCode = grant.code,
-                                grantType = "authorization_code"
-                            )
-                        )
-                    }
-
-                    response.toAuthTokenResult()
-                }
-
-                is RefreshTokenGrant -> {
-                    val response = ktorClient.post(submitUrl) {
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            ExchangeRefreshTokenRequest(
-                                refreshToken = grant.code,
-                                grantType = "refresh_token"
-                            )
-                        )
-                    }
-
-                    response.toAuthTokenResult()
-                }
+            val response = authService.grantToken(grantTokenInput)
+            AuthTokenResult.Success(
+                AccessToken(response.accessToken, response.accessTokenExpiresIn),
+                RefreshToken(response.refreshToken, response.refreshTokenExpiresIn)
+            )
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> AuthTokenResult.Error.BackendErrorResponse(e.message ?: "unknown error")
+                else -> AuthTokenResult.Error.UnknownError("Error: ${e.message}")
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: IOException) {
-            AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
-        } catch (e: Exception) {
-            AuthTokenResult.Error.UnknownError("Error: ${e.message}")
         }
     }
 

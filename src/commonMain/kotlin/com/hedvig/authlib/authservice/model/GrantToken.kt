@@ -26,12 +26,10 @@ internal sealed interface GrantTokenInput {
 
 @Serializable
 internal data class GrantTokenOutput(
-    @SerialName("token_type")
-    val tokenType: String,
     @SerialName("access_token")
     val accessToken: String,
     @SerialName("expires_in")
-    val expiresIn: String,
+    val accessTokenExpiresIn: Long,
     @SerialName("refresh_token")
     val refreshToken: String,
     @SerialName("refresh_token_expires_in")

@@ -57,7 +57,7 @@ public sealed interface AuthAttemptResult {
 
 public sealed interface AuthTokenResult {
     public sealed interface Error: AuthTokenResult {
-        public data class BackendErrorResponse(val message: String, val httpStatusValue: Int) : Error
+        public data class BackendErrorResponse(val message: String) : Error
         public data class IOError(val message: String) : Error
         public data class UnknownError(val message: String) : Error
     }
@@ -95,12 +95,12 @@ public data class RefreshTokenGrant(override val code: String) : Grant
 
 public data class AccessToken(
     val token: String,
-    val expiryInSeconds: Int
+    val expiryInSeconds: Long
 )
 
 public data class RefreshToken(
     val token: String,
-    val expiryInSeconds: Int
+    val expiryInSeconds: Long
 )
 
 public sealed interface RevokeResult {
