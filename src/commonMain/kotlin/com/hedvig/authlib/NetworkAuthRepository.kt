@@ -3,8 +3,6 @@ package com.hedvig.authlib
 import com.hedvig.authlib.internal.commonKtorConfiguration
 import com.hedvig.authlib.network.ExchangeAuthorizationCodeRequest
 import com.hedvig.authlib.network.ExchangeRefreshTokenRequest
-import com.hedvig.authlib.network.MigrateOldTokenRequest
-import com.hedvig.authlib.network.MigrateOldTokenResponse
 import com.hedvig.authlib.network.RevokeRequest
 import com.hedvig.authlib.network.SubmitOtpRequest
 import com.hedvig.authlib.network.buildStartLoginRequest
@@ -14,9 +12,7 @@ import com.hedvig.authlib.network.toLoginStatusResult
 import com.hedvig.authlib.network.toSubmitOtpResult
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.plugins.*
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -194,25 +190,6 @@ public class NetworkAuthRepository(
             }
         } catch (e: Exception) {
             RevokeResult.Error("Error: ${e.message}")
-        }
-    }
-
-    override suspend fun migrateOldToken(token: String): AuthTokenResult {
-        return try {
-            val response = ktorClient.post("${environment.gatewayUrl}/migrate-auth-token") {
-                contentType(ContentType.Application.Json)
-                setBody(MigrateOldTokenRequest(token))
-            }
-
-            val responseBody = response.body<MigrateOldTokenResponse>()
-
-            return exchange(AuthorizationCodeGrant(responseBody.authorizationCode))
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: IOException) {
-            AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
-        } catch (e: Exception) {
-            AuthTokenResult.Error.UnknownError("Error: ${e.message}")
         }
     }
 }
