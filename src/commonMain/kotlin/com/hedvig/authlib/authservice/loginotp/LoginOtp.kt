@@ -1,5 +1,8 @@
 package com.hedvig.authlib.authservice.loginotp
 
+import com.hedvig.authlib.url.OtpResendUrl
+import com.hedvig.authlib.url.OtpVerifyUrl
+import com.hedvig.authlib.url.LoginStatusUrl
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -25,13 +28,13 @@ internal sealed interface LoginOtpResponse {
     @SerialName("success")
     data class Success(
         val id: String,
-        val statusUrl: String,
+        val statusUrl: LoginStatusUrl,
         val otpProperties: OtpProperties
     ) : LoginOtpResponse {
         @Serializable
         data class OtpProperties(
-            val resendUrl: String,
-            val verifyUrl: String,
+            val resendUrl: OtpResendUrl,
+            val verifyUrl: OtpVerifyUrl,
             @SerialName("email")
             val maskedEmail: String,
         )

@@ -1,3 +1,12 @@
 package com.hedvig.authlib.url
 
-public data class OtpVerifyUrl(val url: String)
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
+
+@Serializable
+@JvmInline
+public value class OtpVerifyUrl(
+    @SerialName("verifyUrl")
+    public val url: String
+)

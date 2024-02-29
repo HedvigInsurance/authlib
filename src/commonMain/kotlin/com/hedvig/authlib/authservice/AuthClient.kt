@@ -1,7 +1,6 @@
 package com.hedvig.authlib.authservice
 
 import com.hedvig.authlib.AuthEnvironment
-import com.hedvig.authlib.StatusUrl
 import com.hedvig.authlib.authservice.loginotp.LoginOtpInput
 import com.hedvig.authlib.authservice.loginotp.LoginOtpResponse
 import com.hedvig.authlib.authservice.loginotpsweden.LoginOtpSwedenInput
@@ -14,6 +13,7 @@ import com.hedvig.authlib.authservice.otpverify.OtpVerifyResponse
 import com.hedvig.authlib.baseUrl
 import com.hedvig.authlib.url.OtpResendUrl
 import com.hedvig.authlib.url.OtpVerifyUrl
+import com.hedvig.authlib.url.LoginStatusUrl
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -65,8 +65,8 @@ internal class AuthService(
     }
 
     @Throws(NoTransformationFoundException::class, Throwable::class)
-    suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResponse {
-        val response = ktorClient.get("${environment.baseUrl}${statusUrl.url}")
+    suspend fun loginStatus(loginStatusUrl: LoginStatusUrl): LoginStatusResponse {
+        val response = ktorClient.get("${environment.baseUrl}${loginStatusUrl.url}")
         return response.body<LoginStatusResponse>()
     }
 

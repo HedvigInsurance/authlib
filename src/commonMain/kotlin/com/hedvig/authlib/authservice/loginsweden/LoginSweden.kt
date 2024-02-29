@@ -1,5 +1,6 @@
 package com.hedvig.authlib.authservice.loginsweden
 
+import com.hedvig.authlib.url.LoginStatusUrl
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -19,7 +20,7 @@ internal sealed interface LoginSwedenResponse {
     @SerialName("success")
     data class Success(
         val id: String,
-        val statusUrl: String,
+        val statusUrl: LoginStatusUrl,
         val seBankIdProperties: SeBankIdProperties
     ) : LoginSwedenResponse {
         @Serializable

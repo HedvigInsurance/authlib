@@ -1,7 +1,6 @@
 package com.hedvig.authlib.network
 
 import com.hedvig.authlib.AuthAttemptResult
-import com.hedvig.authlib.StatusUrl
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
