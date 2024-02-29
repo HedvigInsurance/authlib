@@ -4,11 +4,9 @@ import com.hedvig.authlib.internal.commonKtorConfiguration
 import com.hedvig.authlib.network.ExchangeAuthorizationCodeRequest
 import com.hedvig.authlib.network.ExchangeRefreshTokenRequest
 import com.hedvig.authlib.network.RevokeRequest
-import com.hedvig.authlib.network.SubmitOtpRequest
 import com.hedvig.authlib.network.buildStartLoginRequest
 import com.hedvig.authlib.network.toAuthAttemptResult
 import com.hedvig.authlib.network.toAuthTokenResult
-import com.hedvig.authlib.network.toLoginStatusResult
 import com.hedvig.authlib.network.toSubmitOtpResult
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig

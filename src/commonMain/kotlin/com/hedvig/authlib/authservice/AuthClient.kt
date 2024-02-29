@@ -1,13 +1,19 @@
 package com.hedvig.authlib.authservice
 
 import com.hedvig.authlib.AuthEnvironment
-import com.hedvig.authlib.authservice.otplogin.LoginOtpInput
-import com.hedvig.authlib.authservice.otplogin.LoginOtpResponse
-import com.hedvig.authlib.authservice.otpswedenlogin.LoginOtpSwedenInput
-import com.hedvig.authlib.authservice.otpswedenlogin.LoginOtpSwedenResponse
+import com.hedvig.authlib.StatusUrl
+import com.hedvig.authlib.authservice.model.otp.login.LoginOtpInput
+import com.hedvig.authlib.authservice.model.otp.login.LoginOtpResponse
+import com.hedvig.authlib.authservice.model.otp.swedenlogin.LoginOtpSwedenInput
+import com.hedvig.authlib.authservice.model.otp.swedenlogin.LoginOtpSwedenResponse
+import com.hedvig.authlib.authservice.model.otp.verify.OtpVerifyInput
+import com.hedvig.authlib.authservice.model.otp.verify.OtpVerifyResponse
 import com.hedvig.authlib.authservice.swedenlogin.LoginSwedenInput
 import com.hedvig.authlib.authservice.swedenlogin.LoginSwedenResponse
 import com.hedvig.authlib.baseUrl
+import com.hedvig.authlib.authservice.model.swedenstatus.LoginStatusResponse
+import com.hedvig.authlib.url.OtpResendUrl
+import com.hedvig.authlib.url.OtpVerifyUrl
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -57,4 +63,32 @@ internal class AuthService(
         }
         return response.body<LoginOtpSwedenResponse>()
     }
+
+    @Throws(NoTransformationFoundException::class, Throwable::class)
+    suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResponse {
+        val response = ktorClient.get("${environment.baseUrl}${statusUrl.url}")
+        return response.body<LoginStatusResponse>()
+    }
+
+    @Throws(NoTransformationFoundException::class, Throwable::class)
+    suspend fun otpVerify(otp: String, otpVerifyUrl: OtpVerifyUrl): OtpVerifyResponse {
+        val response = ktorClient.post("${environment.baseUrl}${otpVerifyUrl.url}") {
+            contentType(ContentType.Application.Json)
+            setBody(OtpVerifyInput(otp))
+        }
+        return response.body<OtpVerifyResponse>()
+    }
+
+    /**
+     * @return [true] if the request had a status 200 as a response
+     */
+    @Throws(Throwable::class)
+    suspend fun otpResend(otpResendUrl: OtpResendUrl): Boolean {
+        val response = ktorClient.post("${environment.baseUrl}${otpResendUrl.url}")
+        return response.status == HttpStatusCode.OK
+    }
 }
+
+
+
+

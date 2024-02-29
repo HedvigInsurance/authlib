@@ -1,10 +1,9 @@
 package com.hedvig.authlib.authservice.swedenlogin
 
-import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
 internal data class LoginSwedenInput(
@@ -14,19 +13,12 @@ internal data class LoginSwedenInput(
 }
 
 
-private class LoginSwedenResponseSerializer :
-    JsonContentPolymorphicSerializer<LoginSwedenResponse>(LoginSwedenResponse::class) {
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<LoginSwedenResponse> {
-        return when {
-            "reason" in element.jsonObject -> LoginSwedenResponse.Error.serializer()
-            else -> LoginSwedenResponse.Success.serializer()
-        }
-    }
-}
-
-@Serializable(with = LoginSwedenResponseSerializer::class)
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("result")
+@Serializable
 internal sealed interface LoginSwedenResponse {
     @Serializable
+    @SerialName("success")
     data class Success(
         val id: String,
         val statusUrl: String,
@@ -42,5 +34,6 @@ internal sealed interface LoginSwedenResponse {
     }
 
     @Serializable
+    @SerialName("error")
     data class Error(val reason: String) : LoginSwedenResponse
 }
