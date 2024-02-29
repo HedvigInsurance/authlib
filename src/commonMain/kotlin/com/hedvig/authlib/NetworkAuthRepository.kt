@@ -28,15 +28,9 @@ import kotlinx.coroutines.flow.flow
 
 private const val POLL_DELAY_MILLIS = 1000L
 
-public data class Callbacks(
-    val successUrl: String,
-    val failureUrl: String
-)
-
 public class NetworkAuthRepository(
     private val environment: AuthEnvironment,
     private val additionalHttpHeadersProvider: () -> Map<String, String>,
-    private val callbacks: Callbacks,
     private val httpClientEngine: HttpClientEngine? = null,
 ) : AuthRepository {
     private val ktorClient: HttpClient = run {
@@ -67,7 +61,6 @@ public class NetworkAuthRepository(
                     market,
                     personalNumber,
                     email,
-                    callbacks
                 )
             }
 

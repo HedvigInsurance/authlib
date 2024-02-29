@@ -19,18 +19,12 @@ internal sealed interface StartLoginResponse {
         val method: String,
         val statusUrl: String,
         val seBankIdProperties: BankIdProperties?,
-        val zignSecProperties: ZignSecProperties?,
         val otpProperties: OtpProperties?
     ) : StartLoginResponse {
         @Serializable
         data class BankIdProperties(
             val autoStartToken: String,
             val liveQrCodeData: String
-        )
-
-        @Serializable
-        data class ZignSecProperties(
-            val redirectUrl: String
         )
 
         @Serializable
@@ -76,12 +70,6 @@ private fun StartLoginResponse.Success.toAuthAttemptResult(): AuthAttemptResult 
         statusUrl = StatusUrl(statusUrl),
         autoStartToken = seBankIdProperties.autoStartToken,
         liveQrCodeData = seBankIdProperties.liveQrCodeData
-    )
-
-    zignSecProperties != null -> AuthAttemptResult.ZignSecProperties(
-        id = id,
-        statusUrl = StatusUrl(statusUrl),
-        redirectUrl = zignSecProperties.redirectUrl
     )
 
     otpProperties != null -> AuthAttemptResult.OtpProperties(

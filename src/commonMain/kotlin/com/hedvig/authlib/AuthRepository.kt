@@ -26,7 +26,7 @@ public interface AuthRepository {
 
 @Suppress("unused")
 public enum class LoginMethod {
-    SE_BANKID, ZIGNSEC, OTP
+    SE_BANKID, OTP
 }
 
 public sealed interface AuthAttemptResult {
@@ -43,12 +43,6 @@ public sealed interface AuthAttemptResult {
         val statusUrl: StatusUrl,
         val autoStartToken: String,
         val liveQrCodeData: String
-    ) : AuthAttemptResult
-
-    public data class ZignSecProperties(
-        val id: String,
-        val statusUrl: StatusUrl,
-        val redirectUrl: String
     ) : AuthAttemptResult
 
     public data class OtpProperties(
