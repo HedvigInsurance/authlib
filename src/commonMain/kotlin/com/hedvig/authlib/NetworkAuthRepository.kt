@@ -2,12 +2,14 @@ package com.hedvig.authlib
 
 import com.hedvig.authlib.authservice.AuthService
 import com.hedvig.authlib.authservice.model.GrantTokenInput
+import com.hedvig.authlib.authservice.model.OtpVerifyResponse
 import com.hedvig.authlib.internal.commonKtorConfiguration
 import com.hedvig.authlib.network.RevokeRequest
 import com.hedvig.authlib.network.buildStartLoginRequest
 import com.hedvig.authlib.network.toAuthAttemptResult
 import com.hedvig.authlib.network.toSubmitOtpResult
 import com.hedvig.authlib.url.OtpResendUrl
+import com.hedvig.authlib.url.OtpVerifyUrl
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
@@ -97,14 +99,17 @@ public class NetworkAuthRepository(
 
     override suspend fun submitOtp(verifyUrl: String, otp: String): SubmitOtpResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}$verifyUrl") {
-                contentType(ContentType.Application.Json)
-                setBody(SubmitOtpRequest(otp))
+            when (val response = authService.otpVerify(otp = otp, otpVerifyUrl = OtpVerifyUrl(verifyUrl))) {
+                is OtpVerifyResponse.Error -> SubmitOtpResult.Error(response.statusText)
+                is OtpVerifyResponse.Success -> SubmitOtpResult.Success(AuthorizationCodeGrant(response.authorizationCode))
             }
-
-            response.toSubmitOtpResult()
-        } catch (e: Exception) {
-            SubmitOtpResult.Error("Error: ${e.message}")
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> SubmitOtpResult.Error("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> SubmitOtpResult.Error(e.message ?: "unknown error")
+                else -> SubmitOtpResult.Error("Error: ${e.message}")
+            }
         }
     }
 
