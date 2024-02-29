@@ -1,25 +1,16 @@
-package com.hedvig.authlib.authservice.loginotp
+package com.hedvig.authlib.authservice.model
 
+import com.hedvig.authlib.url.LoginStatusUrl
 import com.hedvig.authlib.url.OtpResendUrl
 import com.hedvig.authlib.url.OtpVerifyUrl
-import com.hedvig.authlib.url.LoginStatusUrl
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.Serializable
 
-@Serializable
-internal data class LoginOtpInput(
-    val country: OtpLoginCountry,
-    val personalNumber: String,
-) {
-    val method: String = "OTP"
-
-    enum class OtpLoginCountry {
-        NO, DK
-    }
-}
-
+/**
+ * Works as a response type for both OTP for Sweden and also for OTP for other markets
+ */
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("result")
 @Serializable

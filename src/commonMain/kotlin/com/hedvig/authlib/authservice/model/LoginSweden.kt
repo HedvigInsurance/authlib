@@ -1,4 +1,4 @@
-package com.hedvig.authlib.authservice.loginsweden
+package com.hedvig.authlib.authservice.model
 
 import com.hedvig.authlib.url.LoginStatusUrl
 import kotlinx.serialization.ExperimentalSerializationApi

@@ -1,19 +1,11 @@
 package com.hedvig.authlib.authservice
 
 import com.hedvig.authlib.AuthEnvironment
-import com.hedvig.authlib.authservice.loginotp.LoginOtpInput
-import com.hedvig.authlib.authservice.loginotp.LoginOtpResponse
-import com.hedvig.authlib.authservice.loginotpsweden.LoginOtpSwedenInput
-import com.hedvig.authlib.authservice.loginotpsweden.LoginOtpSwedenResponse
-import com.hedvig.authlib.authservice.loginstatus.LoginStatusResponse
-import com.hedvig.authlib.authservice.loginsweden.LoginSwedenInput
-import com.hedvig.authlib.authservice.loginsweden.LoginSwedenResponse
-import com.hedvig.authlib.authservice.otpverify.OtpVerifyInput
-import com.hedvig.authlib.authservice.otpverify.OtpVerifyResponse
+import com.hedvig.authlib.authservice.model.*
 import com.hedvig.authlib.baseUrl
+import com.hedvig.authlib.url.LoginStatusUrl
 import com.hedvig.authlib.url.OtpResendUrl
 import com.hedvig.authlib.url.OtpVerifyUrl
-import com.hedvig.authlib.url.LoginStatusUrl
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -56,12 +48,12 @@ internal class AuthService(
     @Throws(NoTransformationFoundException::class, Throwable::class)
     suspend fun memberLoginOtpSweden(
         email: String,
-    ): LoginOtpSwedenResponse {
+    ): LoginOtpResponse {
         val response = ktorClient.post("${environment.baseUrl}/member-login") {
             contentType(ContentType.Application.Json)
             setBody(LoginOtpSwedenInput(email))
         }
-        return response.body<LoginOtpSwedenResponse>()
+        return response.body<LoginOtpResponse>()
     }
 
     @Throws(NoTransformationFoundException::class, Throwable::class)

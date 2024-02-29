@@ -1,4 +1,4 @@
-package com.hedvig.authlib.authservice.otpverify
+package com.hedvig.authlib.authservice.model
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName

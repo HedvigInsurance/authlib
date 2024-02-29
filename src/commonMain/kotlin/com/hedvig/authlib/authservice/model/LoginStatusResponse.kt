@@ -1,4 +1,4 @@
-package com.hedvig.authlib.authservice.loginstatus
+package com.hedvig.authlib.authservice.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
