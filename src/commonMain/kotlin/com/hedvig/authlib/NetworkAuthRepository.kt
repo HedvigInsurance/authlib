@@ -9,7 +9,6 @@ import com.hedvig.authlib.url.OtpVerifyUrl
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
-import io.ktor.client.request.*
 import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -29,28 +28,72 @@ public class NetworkAuthRepository(
 
     override suspend fun startLoginAttempt(
         loginMethod: LoginMethod,
-        market: String,
+        market: OtpMarket,
         personalNumber: String?,
         email: String?
     ): AuthAttemptResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}/member-login") {
-                buildStartLoginRequest(
-                    loginMethod,
-                    market,
-                    personalNumber,
-                    email,
-                )
-            }
+            when (loginMethod) {
+                LoginMethod.SE_BANKID -> {
+                    when (val response = authService.memberLoginSweden(personalNumber)) {
+                        is LoginSwedenResponse.Success -> {
+                            AuthAttemptResult.BankIdProperties(
+                                response.id,
+                                response.statusUrl,
+                                response.seBankIdProperties.autoStartToken,
+                                response.seBankIdProperties.liveQrCodeData,
+                                response.seBankIdProperties.bankIdAppOpened,
+                            )
+                        }
 
-            return response.toAuthAttemptResult()
-        } catch (e: IOException) {
-            AuthAttemptResult.Error.IOError("IOError: ${e.message}")
-        } catch (e: Exception) {
-            if (e is CancellationException) {
-                throw e
+                        is LoginSwedenResponse.Error -> {
+                            AuthAttemptResult.Error.Localised(response.reason)
+                        }
+                    }
+                }
+
+                LoginMethod.OTP -> {
+                    val otpResponse = when (market) {
+                        OtpMarket.SE -> {
+                            requireNotNull(email) { "Can't try to login with Swedish OTP without passing in an email" }
+                            require(personalNumber == null) { "Can't try to login with Swedish OTP with a personal number" }
+                            authService.memberLoginOtpSweden(email)
+                        }
+
+                        OtpMarket.NO -> {
+                            requireNotNull(personalNumber) { "Can't try to login with NO OTP without passing in a PN" }
+                            require(email == null) { "Can't try to login with NO OTP with an email" }
+                            authService.memberLoginOtp(LoginOtpInput.OtpLoginCountry.NO, personalNumber)
+                        }
+
+                        OtpMarket.DK -> {
+                            requireNotNull(personalNumber) { "Can't try to login with DK OTP without passing in a PN" }
+                            require(email == null) { "Can't try to login with DK OTP with an email" }
+                            authService.memberLoginOtp(LoginOtpInput.OtpLoginCountry.DK, personalNumber)
+                        }
+                    }
+                    when (otpResponse) {
+                        is LoginOtpResponse.Error -> AuthAttemptResult.Error.Localised(otpResponse.reason)
+                        is LoginOtpResponse.Success -> AuthAttemptResult.OtpProperties(
+                            id = otpResponse.id,
+                            statusUrl = otpResponse.statusUrl,
+                            resendUrl = otpResponse.otpProperties.resendUrl.url,
+                            verifyUrl = otpResponse.otpProperties.verifyUrl.url,
+                            maskedEmail = otpResponse.otpProperties.maskedEmail,
+                        )
+                    }
+                }
             }
-            AuthAttemptResult.Error.UnknownError("Error: ${e.message}")
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> AuthAttemptResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> AuthAttemptResult.Error.BackendErrorResponse(
+                    e.message ?: "unknown error"
+                )
+
+                else -> AuthAttemptResult.Error.UnknownError("Error: ${e.message}")
+            }
         }
     }
 
