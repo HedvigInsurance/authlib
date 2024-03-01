@@ -11,9 +11,11 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.*
 import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 
 private const val POLL_DELAY_MILLIS = 1000L
 
@@ -126,7 +128,7 @@ public class NetworkAuthRepository(
 
     override fun observeLoginStatus(statusUrl: LoginStatusUrl): Flow<LoginStatusResult> {
         return flow {
-            while (true) {
+            while (currentCoroutineContext().isActive) {
                 val loginStatusResult = loginStatus(statusUrl)
                 emit(loginStatusResult)
                 if (loginStatusResult is LoginStatusResult.Pending) {
