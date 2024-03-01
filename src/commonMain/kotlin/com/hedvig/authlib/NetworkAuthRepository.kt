@@ -43,8 +43,6 @@ public class NetworkAuthRepository(
                                 response.id,
                                 response.statusUrl,
                                 response.seBankIdProperties.autoStartToken,
-                                response.seBankIdProperties.liveQrCodeData,
-                                response.seBankIdProperties.bankIdAppOpened,
                             )
                         }
 
@@ -63,13 +61,13 @@ public class NetworkAuthRepository(
                         }
 
                         OtpMarket.NO -> {
-                            requireNotNull(personalNumber) { "Can't try to login with NO OTP without passing in a PN" }
+                            requireNotNull(personalNumber) { "Can't try to login with NO OTP without passing in a personal number" }
                             require(email == null) { "Can't try to login with NO OTP with an email" }
                             authService.memberLoginOtp(LoginOtpInput.OtpLoginCountry.NO, personalNumber)
                         }
 
                         OtpMarket.DK -> {
-                            requireNotNull(personalNumber) { "Can't try to login with DK OTP without passing in a PN" }
+                            requireNotNull(personalNumber) { "Can't try to login with DK OTP without passing in a personal number" }
                             require(email == null) { "Can't try to login with DK OTP with an email" }
                             authService.memberLoginOtp(LoginOtpInput.OtpLoginCountry.DK, personalNumber)
                         }

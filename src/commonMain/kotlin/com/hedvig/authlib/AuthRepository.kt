@@ -45,8 +45,6 @@ public sealed interface AuthAttemptResult {
         val id: String,
         val statusUrl: LoginStatusUrl,
         val autoStartToken: String,
-        val liveQrCodeData: String,
-        val bankIdOpened: Boolean,
     ) : AuthAttemptResult
 
     public data class OtpProperties(

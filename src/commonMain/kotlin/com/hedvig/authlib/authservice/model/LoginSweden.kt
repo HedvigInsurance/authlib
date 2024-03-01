@@ -28,12 +28,7 @@ internal sealed interface LoginSwedenResponse {
         val seBankIdProperties: SeBankIdProperties
     ) : LoginSwedenResponse {
         @Serializable
-        data class SeBankIdProperties(
-            val autoStartToken: String,
-            val liveQrCodeData: String,
-            @SerialName("bankidAppOpened")
-            val bankIdAppOpened: Boolean,
-        )
+        data class SeBankIdProperties(val autoStartToken: String)
     }
 
     @Serializable
