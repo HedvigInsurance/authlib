@@ -13,7 +13,7 @@ internal data class LoginStatusResponse(
 
     @Serializable
     data class BankIdProperties(
-        val autoStartToken: String, // todo do we need it?
+        val autoStartToken: String,
         val liveQrCodeData: String,
         @SerialName("bankidAppOpened")
         val bankIdAppOpened: Boolean,

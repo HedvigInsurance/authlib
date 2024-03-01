@@ -105,7 +105,13 @@ public class NetworkAuthRepository(
             when (response.status) {
                 LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(
                     response.statusText,
-                    response.seBankIdProperties?.liveQrCodeData
+                    response.seBankIdProperties?.let { bankIdProperties ->
+                        LoginStatusResult.Pending.BankIdProperties(
+                            bankIdProperties.autoStartToken,
+                            bankIdProperties.liveQrCodeData,
+                            bankIdProperties.bankIdAppOpened,
+                        )
+                    }
                 )
 
                 LoginStatusResponse.LoginStatus.FAILED -> LoginStatusResult.Failed(response.statusText)

@@ -2,7 +2,6 @@ package com.hedvig.authlib
 
 import com.hedvig.authlib.url.LoginStatusUrl
 import kotlinx.coroutines.flow.Flow
-import kotlin.jvm.JvmInline
 
 public interface AuthRepository {
     public suspend fun startLoginAttempt(
@@ -60,7 +59,7 @@ public sealed interface AuthAttemptResult {
 }
 
 public sealed interface AuthTokenResult {
-    public sealed interface Error: AuthTokenResult {
+    public sealed interface Error : AuthTokenResult {
         public data class BackendErrorResponse(val message: String) : Error
         public data class IOError(val message: String) : Error
         public data class UnknownError(val message: String) : Error
@@ -75,7 +74,17 @@ public sealed interface AuthTokenResult {
 public sealed interface LoginStatusResult {
     public data class Exception(val message: String) : LoginStatusResult
     public data class Failed(val message: String) : LoginStatusResult
-    public data class Pending(val statusMessage: String, val liveQrCodeData: String?) : LoginStatusResult
+    public data class Pending(
+        val statusMessage: String,
+        val bankIdProperties: BankIdProperties?,
+    ) : LoginStatusResult {
+        public data class BankIdProperties(
+            val autoStartToken: String?,
+            val liveQrCodeData: String?,
+            val bankIdAppOpened: Boolean?,
+        )
+    }
+
     public data class Completed(val authorizationCode: AuthorizationCodeGrant) : LoginStatusResult
 }
 
