@@ -2,20 +2,18 @@ package com.hedvig.authlib
 
 import com.hedvig.authlib.authservice.AuthService
 import com.hedvig.authlib.authservice.model.GrantTokenInput
+import com.hedvig.authlib.authservice.model.LoginStatusResponse
 import com.hedvig.authlib.authservice.model.OtpVerifyResponse
 import com.hedvig.authlib.internal.commonKtorConfiguration
-import com.hedvig.authlib.network.RevokeRequest
 import com.hedvig.authlib.network.buildStartLoginRequest
 import com.hedvig.authlib.network.toAuthAttemptResult
-import com.hedvig.authlib.network.toSubmitOtpResult
+import com.hedvig.authlib.url.LoginStatusUrl
 import com.hedvig.authlib.url.OtpResendUrl
 import com.hedvig.authlib.url.OtpVerifyUrl
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -72,22 +70,38 @@ public class NetworkAuthRepository(
         }
     }
 
-    override suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult {
+    override suspend fun loginStatus(statusUrl: LoginStatusUrl): LoginStatusResult {
         return try {
-            val response = ktorClient.get("${environment.baseUrl}${statusUrl.url}")
-            response.toLoginStatusResult()
-        } catch (e: Exception) {
-            LoginStatusResult.Exception("Error: ${e.message}")
+            val response = authService.loginStatus(statusUrl)
+            when (response.status) {
+                LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(
+                    response.statusText,
+                    response.seBankIdProperties?.liveQrCodeData
+                )
+
+                LoginStatusResponse.LoginStatus.FAILED -> LoginStatusResult.Failed(response.statusText)
+                LoginStatusResponse.LoginStatus.COMPLETED -> {
+                    require(response.authorizationCode != null) {
+                        "Login status completed but did not receive authorization code"
+                    }
+                    LoginStatusResult.Completed(AuthorizationCodeGrant(response.authorizationCode))
+                }
+            }
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> LoginStatusResult.Exception("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> LoginStatusResult.Exception(e.message ?: "unknown error")
+                else -> LoginStatusResult.Exception("Error: ${e.message}")
+            }
         }
     }
 
-    override fun observeLoginStatus(statusUrl: StatusUrl): Flow<LoginStatusResult> {
+    override fun observeLoginStatus(statusUrl: LoginStatusUrl): Flow<LoginStatusResult> {
         return flow {
             while (true) {
                 val loginStatusResult = loginStatus(statusUrl)
-
                 emit(loginStatusResult)
-
                 if (loginStatusResult is LoginStatusResult.Pending) {
                     delay(POLL_DELAY_MILLIS)
                 } else {
@@ -146,7 +160,10 @@ public class NetworkAuthRepository(
             when (e) {
                 is CancellationException -> throw e
                 is IOException -> AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
-                is NoTransformationFoundException -> AuthTokenResult.Error.BackendErrorResponse(e.message ?: "unknown error")
+                is NoTransformationFoundException -> AuthTokenResult.Error.BackendErrorResponse(
+                    e.message ?: "unknown error"
+                )
+
                 else -> AuthTokenResult.Error.UnknownError("Error: ${e.message}")
             }
         }

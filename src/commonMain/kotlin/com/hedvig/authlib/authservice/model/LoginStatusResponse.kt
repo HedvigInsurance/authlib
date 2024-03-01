@@ -13,6 +13,7 @@ internal data class LoginStatusResponse(
 
     @Serializable
     data class BankIdProperties(
+        val autoStartToken: String, // todo do we need it?
         val liveQrCodeData: String,
         @SerialName("bankidAppOpened")
         val bankIdAppOpened: Boolean,
@@ -22,16 +23,3 @@ internal data class LoginStatusResponse(
         PENDING, FAILED, COMPLETED
     }
 }
-
-//private fun LoginStatusResponse.toLoginStatusResult(): LoginStatusResult = when (status) {
-//    LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(statusText, seBankIdProperties?.liveQrCodeData)
-//    LoginStatusResponse.LoginStatus.FAILED -> LoginStatusResult.Failed(statusText)
-//    LoginStatusResponse.LoginStatus.COMPLETED -> {
-//        require(authorizationCode != null) {
-//            "Login status completed but did not receive authorization code"
-//        }
-//
-//        val code = AuthorizationCodeGrant(authorizationCode)
-//        LoginStatusResult.Completed(code)
-//    }
-//}
