@@ -1,4 +1,4 @@
-package com.hedvig.authlib.network
+package com.hedvig.authlib.connectpayment
 
 import kotlinx.serialization.Serializable
 
