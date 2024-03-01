@@ -1,14 +1,18 @@
+
 package com.hedvig.authlib.authservice.model
 
 import com.hedvig.authlib.url.LoginStatusUrl
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 internal data class LoginSwedenInput(val personalNumber: String?) {
+    @EncodeDefault
     val method: String = "SE_BANKID"
 }
 
