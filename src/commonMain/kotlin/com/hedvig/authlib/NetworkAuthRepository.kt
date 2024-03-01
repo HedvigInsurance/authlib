@@ -1,12 +1,8 @@
 package com.hedvig.authlib
 
 import com.hedvig.authlib.authservice.AuthService
-import com.hedvig.authlib.authservice.model.GrantTokenInput
-import com.hedvig.authlib.authservice.model.LoginStatusResponse
-import com.hedvig.authlib.authservice.model.OtpVerifyResponse
-import com.hedvig.authlib.internal.commonKtorConfiguration
-import com.hedvig.authlib.network.buildStartLoginRequest
-import com.hedvig.authlib.network.toAuthAttemptResult
+import com.hedvig.authlib.authservice.model.*
+import com.hedvig.authlib.internal.buildKtorClient
 import com.hedvig.authlib.url.LoginStatusUrl
 import com.hedvig.authlib.url.OtpResendUrl
 import com.hedvig.authlib.url.OtpVerifyUrl
@@ -23,24 +19,12 @@ import kotlinx.coroutines.flow.flow
 private const val POLL_DELAY_MILLIS = 1000L
 
 public class NetworkAuthRepository(
-    private val environment: AuthEnvironment,
-    private val additionalHttpHeadersProvider: () -> Map<String, String>,
-    private val httpClientEngine: HttpClientEngine? = null,
+    environment: AuthEnvironment,
+    additionalHttpHeadersProvider: () -> Map<String, String>,
+    httpClientEngine: HttpClientEngine? = null,
 ) : AuthRepository {
-    private val ktorClient: HttpClient = run {
-        val httpClientConfig: HttpClientConfig<*>.() -> Unit = {
-            commonKtorConfiguration(additionalHttpHeadersProvider).invoke(this)
-        }
-        if (httpClientEngine == null) {
-            HttpClient {
-                httpClientConfig()
-            }
-        } else {
-            HttpClient(httpClientEngine) {
-                httpClientConfig()
-            }
-        }
-    }
+    private val ktorClient: HttpClient = buildKtorClient(httpClientEngine, additionalHttpHeadersProvider)
+
     private val authService = AuthService(environment, ktorClient)
 
     override suspend fun startLoginAttempt(
