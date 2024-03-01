@@ -7,7 +7,7 @@ import kotlin.jvm.JvmInline
 public interface AuthRepository {
     public suspend fun startLoginAttempt(
         loginMethod: LoginMethod,
-        market: String,
+        market: OtpMarket,
         personalNumber: String? = null,
         email: String? = null
     ): AuthAttemptResult
@@ -25,16 +25,19 @@ public interface AuthRepository {
     public suspend fun revoke(token: String): RevokeResult
 }
 
-@Suppress("unused")
 public enum class LoginMethod {
     SE_BANKID, OTP
+}
+
+public enum class OtpMarket {
+    SE, NO, DK
 }
 
 public sealed interface AuthAttemptResult {
 
     public sealed interface Error : AuthAttemptResult {
         public data class Localised(val reason: String) : Error
-        public data class BackendErrorResponse(val message: String, val httpStatusValue: Int) : Error
+        public data class BackendErrorResponse(val message: String) : Error
         public data class IOError(val message: String) : Error
         public data class UnknownError(val message: String) : Error
     }
@@ -43,7 +46,8 @@ public sealed interface AuthAttemptResult {
         val id: String,
         val statusUrl: LoginStatusUrl,
         val autoStartToken: String,
-        val liveQrCodeData: String
+        val liveQrCodeData: String,
+        val bankIdOpened: Boolean,
     ) : AuthAttemptResult
 
     public data class OtpProperties(
@@ -107,16 +111,3 @@ public sealed interface RevokeResult {
     public data class Error(val message: String) : RevokeResult
     public data object Success : RevokeResult
 }
-
-public sealed interface MemberAuthorizationCodeResult {
-    public data class Error(val error: Throwable) : MemberAuthorizationCodeResult
-
-    public data class Success(
-        public val memberPaymentUrl: MemberPaymentUrl,
-    ) : MemberAuthorizationCodeResult
-}
-
-@JvmInline
-public value class MemberPaymentUrl(
-    public val url: String
-)
