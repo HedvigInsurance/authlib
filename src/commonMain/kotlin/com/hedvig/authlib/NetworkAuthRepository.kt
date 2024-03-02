@@ -32,12 +32,13 @@ public class NetworkAuthRepository(
         loginMethod: LoginMethod,
         market: OtpMarket,
         personalNumber: String?,
-        email: String?
+        email: String?,
+        useBankIdV6: Boolean,
     ): AuthAttemptResult {
         return try {
             when (loginMethod) {
                 LoginMethod.SE_BANKID -> {
-                    when (val response = authService.memberLoginSweden(personalNumber)) {
+                    when (val response = authService.memberLoginSweden(personalNumber, useBankIdV6)) {
                         is LoginSwedenResponse.Success -> {
                             AuthAttemptResult.BankIdProperties(
                                 response.id,

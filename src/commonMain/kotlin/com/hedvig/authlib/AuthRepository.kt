@@ -8,7 +8,8 @@ public interface AuthRepository {
         loginMethod: LoginMethod,
         market: OtpMarket,
         personalNumber: String? = null,
-        email: String? = null
+        email: String? = null,
+        useBankIdV6: Boolean = true,
     ): AuthAttemptResult
 
     public fun observeLoginStatus(statusUrl: LoginStatusUrl): Flow<LoginStatusResult>
