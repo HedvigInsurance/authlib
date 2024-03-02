@@ -77,9 +77,9 @@ public sealed interface LoginStatusResult {
         val bankIdProperties: BankIdProperties?,
     ) : LoginStatusResult {
         public data class BankIdProperties(
-            val autoStartToken: String?,
-            val liveQrCodeData: String?,
-            val bankIdAppOpened: Boolean?,
+            val autoStartToken: String,
+            val liveQrCodeData: String,
+            val bankIdAppOpened: Boolean,
         )
     }
 
