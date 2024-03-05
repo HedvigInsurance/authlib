@@ -21,12 +21,9 @@ internal class AuthService(
     @Throws(NoTransformationFoundException::class, Throwable::class)
     suspend fun memberLoginSweden(
         personalNumber: String?,
-        useBankIdV6: Boolean,
     ): LoginSwedenResponse {
         val response = ktorClient.post("${environment.baseUrl}/member-login") {
-            if (useBankIdV6) {
-                headers["hedvig-bankid-v6"] = "true"
-            }
+            headers["hedvig-bankid-v6"] = "true"
             contentType(ContentType.Application.Json)
             setBody(LoginSwedenInput(personalNumber))
         }

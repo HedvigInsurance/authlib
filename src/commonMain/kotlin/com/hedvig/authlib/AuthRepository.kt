@@ -9,7 +9,6 @@ public interface AuthRepository {
         market: OtpMarket,
         personalNumber: String? = null,
         email: String? = null,
-        useBankIdV6: Boolean = true,
     ): AuthAttemptResult
 
     public fun observeLoginStatus(statusUrl: LoginStatusUrl): Flow<LoginStatusResult>
@@ -72,7 +71,7 @@ public sealed interface AuthTokenResult {
 
 public sealed interface LoginStatusResult {
     public data class Exception(val message: String) : LoginStatusResult
-    public data class Failed(val message: String) : LoginStatusResult
+    public data class Failed(val localisedMessage: String) : LoginStatusResult
     public data class Pending(
         val statusMessage: String,
         val bankIdProperties: BankIdProperties?,
