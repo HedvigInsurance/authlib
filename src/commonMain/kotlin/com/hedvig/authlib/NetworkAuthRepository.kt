@@ -1,103 +1,140 @@
 package com.hedvig.authlib
 
-import com.hedvig.authlib.internal.commonKtorConfiguration
-import com.hedvig.authlib.network.ExchangeAuthorizationCodeRequest
-import com.hedvig.authlib.network.ExchangeRefreshTokenRequest
-import com.hedvig.authlib.network.RevokeRequest
-import com.hedvig.authlib.network.SubmitOtpRequest
-import com.hedvig.authlib.network.buildStartLoginRequest
-import com.hedvig.authlib.network.toAuthAttemptResult
-import com.hedvig.authlib.network.toAuthTokenResult
-import com.hedvig.authlib.network.toLoginStatusResult
-import com.hedvig.authlib.network.toSubmitOtpResult
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
+import com.hedvig.authlib.authservice.AuthService
+import com.hedvig.authlib.authservice.model.*
+import com.hedvig.authlib.internal.buildKtorClient
+import com.hedvig.authlib.url.LoginStatusUrl
+import com.hedvig.authlib.url.OtpResendUrl
+import com.hedvig.authlib.url.OtpVerifyUrl
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.*
 import io.ktor.utils.io.errors.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 
 private const val POLL_DELAY_MILLIS = 1000L
 
-public data class Callbacks(
-    val successUrl: String,
-    val failureUrl: String
-)
-
 public class NetworkAuthRepository(
-    private val environment: AuthEnvironment,
-    private val additionalHttpHeadersProvider: () -> Map<String, String>,
-    private val callbacks: Callbacks,
-    private val httpClientEngine: HttpClientEngine? = null,
+    environment: AuthEnvironment,
+    additionalHttpHeadersProvider: () -> Map<String, String>,
+    httpClientEngine: HttpClientEngine? = null,
 ) : AuthRepository {
-    private val ktorClient: HttpClient = run {
-        val httpClientConfig: HttpClientConfig<*>.() -> Unit = {
-            commonKtorConfiguration(additionalHttpHeadersProvider).invoke(this)
-        }
-        if (httpClientEngine == null) {
-            HttpClient {
-                httpClientConfig()
-            }
-        } else {
-            HttpClient(httpClientEngine) {
-                httpClientConfig()
-            }
-        }
-    }
+    private val ktorClient: HttpClient = buildKtorClient(httpClientEngine, additionalHttpHeadersProvider)
+
+    private val authService = AuthService(environment, ktorClient)
 
     override suspend fun startLoginAttempt(
         loginMethod: LoginMethod,
-        market: String,
+        market: OtpMarket,
         personalNumber: String?,
-        email: String?
+        email: String?,
     ): AuthAttemptResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}/member-login") {
-                buildStartLoginRequest(
-                    loginMethod,
-                    market,
-                    personalNumber,
-                    email,
-                    callbacks
+            when (loginMethod) {
+                LoginMethod.SE_BANKID -> {
+                    when (val response = authService.memberLoginSweden(personalNumber)) {
+                        is LoginSwedenResponse.Success -> {
+                            AuthAttemptResult.BankIdProperties(
+                                response.id,
+                                response.statusUrl,
+                                response.seBankIdProperties.autoStartToken,
+                            )
+                        }
+
+                        is LoginSwedenResponse.Error -> {
+                            AuthAttemptResult.Error.Localised(response.reason)
+                        }
+                    }
+                }
+
+                LoginMethod.OTP -> {
+                    val otpResponse = when (market) {
+                        OtpMarket.SE -> {
+                            requireNotNull(email) { "Can't try to login with Swedish OTP without passing in an email" }
+                            require(personalNumber == null) { "Can't try to login with Swedish OTP with a personal number" }
+                            authService.memberLoginOtpSweden(email)
+                        }
+
+                        OtpMarket.NO -> {
+                            requireNotNull(personalNumber) { "Can't try to login with NO OTP without passing in a personal number" }
+                            require(email == null) { "Can't try to login with NO OTP with an email" }
+                            authService.memberLoginOtp(LoginOtpInput.OtpLoginCountry.NO, personalNumber)
+                        }
+
+                        OtpMarket.DK -> {
+                            requireNotNull(personalNumber) { "Can't try to login with DK OTP without passing in a personal number" }
+                            require(email == null) { "Can't try to login with DK OTP with an email" }
+                            authService.memberLoginOtp(LoginOtpInput.OtpLoginCountry.DK, personalNumber)
+                        }
+                    }
+                    when (otpResponse) {
+                        is LoginOtpResponse.Error -> AuthAttemptResult.Error.Localised(otpResponse.reason)
+                        is LoginOtpResponse.Success -> AuthAttemptResult.OtpProperties(
+                            id = otpResponse.id,
+                            statusUrl = otpResponse.statusUrl,
+                            resendUrl = otpResponse.otpProperties.resendUrl.url,
+                            verifyUrl = otpResponse.otpProperties.verifyUrl.url,
+                            maskedEmail = otpResponse.otpProperties.maskedEmail,
+                        )
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> AuthAttemptResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> AuthAttemptResult.Error.BackendErrorResponse(
+                    e.message ?: "unknown error"
                 )
-            }
 
-            return response.toAuthAttemptResult()
-        } catch (e: IOException) {
-            AuthAttemptResult.Error.IOError("IOError: ${e.message}")
-        } catch (e: Exception) {
-            if (e is CancellationException) {
-                throw e
+                else -> AuthAttemptResult.Error.UnknownError("Error: ${e.message}")
             }
-            AuthAttemptResult.Error.UnknownError("Error: ${e.message}")
         }
     }
 
-    override suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult {
+    override suspend fun loginStatus(statusUrl: LoginStatusUrl): LoginStatusResult {
         return try {
-            val response = ktorClient.get("${environment.baseUrl}${statusUrl.url}")
-            response.toLoginStatusResult()
-        } catch (e: Exception) {
-            LoginStatusResult.Exception("Error: ${e.message}")
+            val response = authService.loginStatus(statusUrl)
+            when (response.status) {
+                LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(
+                    response.statusText,
+                    response.seBankIdProperties?.let { bankIdProperties ->
+                        LoginStatusResult.Pending.BankIdProperties(
+                            bankIdProperties.autoStartToken,
+                            bankIdProperties.liveQrCodeData,
+                            bankIdProperties.bankIdAppOpened,
+                        )
+                    }
+                )
+
+                LoginStatusResponse.LoginStatus.FAILED -> LoginStatusResult.Failed(response.statusText)
+                LoginStatusResponse.LoginStatus.COMPLETED -> {
+                    require(response.authorizationCode != null) {
+                        "Login status completed but did not receive authorization code"
+                    }
+                    LoginStatusResult.Completed(AuthorizationCodeGrant(response.authorizationCode))
+                }
+            }
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> LoginStatusResult.Exception("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> LoginStatusResult.Exception(e.message ?: "unknown error")
+                else -> LoginStatusResult.Exception("Error: ${e.message}")
+            }
         }
     }
 
-    override fun observeLoginStatus(statusUrl: StatusUrl): Flow<LoginStatusResult> {
+    override fun observeLoginStatus(statusUrl: LoginStatusUrl): Flow<LoginStatusResult> {
         return flow {
-            while (true) {
+            while (currentCoroutineContext().isActive) {
                 val loginStatusResult = loginStatus(statusUrl)
-
                 emit(loginStatusResult)
-
                 if (loginStatusResult is LoginStatusResult.Pending) {
                     delay(POLL_DELAY_MILLIS)
                 } else {
@@ -109,87 +146,77 @@ public class NetworkAuthRepository(
 
     override suspend fun submitOtp(verifyUrl: String, otp: String): SubmitOtpResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}$verifyUrl") {
-                contentType(ContentType.Application.Json)
-                setBody(SubmitOtpRequest(otp))
+            when (val response = authService.otpVerify(otp = otp, otpVerifyUrl = OtpVerifyUrl(verifyUrl))) {
+                is OtpVerifyResponse.Error -> SubmitOtpResult.Error(response.statusText)
+                is OtpVerifyResponse.Success -> SubmitOtpResult.Success(AuthorizationCodeGrant(response.authorizationCode))
             }
-
-            response.toSubmitOtpResult()
-        } catch (e: Exception) {
-            SubmitOtpResult.Error("Error: ${e.message}")
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> SubmitOtpResult.Error("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> SubmitOtpResult.Error(e.message ?: "unknown error")
+                else -> SubmitOtpResult.Error("Error: ${e.message}")
+            }
         }
     }
 
     override suspend fun resendOtp(resendUrl: String): ResendOtpResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}$resendUrl")
-
-            if (response.status == HttpStatusCode.OK) {
+            val succeeded = authService.otpResend(OtpResendUrl(resendUrl))
+            if (succeeded) {
                 ResendOtpResult.Success
             } else {
-                ResendOtpResult.Error("Error: ${response.bodyAsText()}")
+                ResendOtpResult.Error("authService.otpResend($resendUrl) resulted in a non 200 response")
             }
-        } catch (e: Exception) {
-            ResendOtpResult.Error("Error: ${e.message}")
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> ResendOtpResult.Error("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> ResendOtpResult.Error(e.message ?: "unknown error")
+                else -> ResendOtpResult.Error("Error: ${e.message}")
+            }
         }
     }
 
     override suspend fun exchange(grant: Grant): AuthTokenResult {
-        val submitUrl = "${environment.baseUrl}/oauth/token"
-
+        val grantTokenInput = when (grant) {
+            is AuthorizationCodeGrant -> GrantTokenInput.AuthorizationCode(grant.code)
+            is RefreshTokenGrant -> GrantTokenInput.RefreshToken(grant.code)
+        }
         return try {
-            when (grant) {
-                is AuthorizationCodeGrant -> {
-                    val response = ktorClient.post(submitUrl) {
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            ExchangeAuthorizationCodeRequest(
-                                authorizationCode = grant.code,
-                                grantType = "authorization_code"
-                            )
-                        )
-                    }
+            val response = authService.grantToken(grantTokenInput)
+            AuthTokenResult.Success(
+                AccessToken(response.accessToken, response.accessTokenExpiresIn),
+                RefreshToken(response.refreshToken, response.refreshTokenExpiresIn)
+            )
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> AuthTokenResult.Error.BackendErrorResponse(
+                    e.message ?: "unknown error"
+                )
 
-                    response.toAuthTokenResult()
-                }
-
-                is RefreshTokenGrant -> {
-                    val response = ktorClient.post(submitUrl) {
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            ExchangeRefreshTokenRequest(
-                                refreshToken = grant.code,
-                                grantType = "refresh_token"
-                            )
-                        )
-                    }
-
-                    response.toAuthTokenResult()
-                }
+                else -> AuthTokenResult.Error.UnknownError("Error: ${e.message}")
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: IOException) {
-            AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
-        } catch (e: Exception) {
-            AuthTokenResult.Error.UnknownError("Error: ${e.message}")
         }
     }
 
     override suspend fun revoke(token: String): RevokeResult {
         return try {
-            val response = ktorClient.post("${environment.baseUrl}/oauth/revoke") {
-                contentType(ContentType.Application.Json)
-                setBody(RevokeRequest(token))
-            }
-
-            if (response.status == HttpStatusCode.OK) {
+            val succeeded = authService.revokeToken(token)
+            if (succeeded) {
                 RevokeResult.Success
             } else {
-                RevokeResult.Error("Could not logout: ${response.bodyAsText()}")
+                RevokeResult.Error("authService.revokeToken($token) resulted in a non 200 response")
             }
-        } catch (e: Exception) {
-            RevokeResult.Error("Error: ${e.message}")
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> throw e
+                is IOException -> RevokeResult.Error("IO Error with message: ${e.message ?: "unknown message"}")
+                is NoTransformationFoundException -> RevokeResult.Error(e.message ?: "unknown error")
+                else -> RevokeResult.Error("Error: ${e.message}")
+            }
         }
     }
 }

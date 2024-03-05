@@ -33,17 +33,17 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.ktor.core)
-            implementation(libs.ktor.json)
             implementation(libs.kotlinx.serializationJson)
             implementation(libs.ktor.client.contentNegotiation)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.json)
             implementation(libs.ktor.client.logging)
         }
         jvmMain.dependencies {
-            api(libs.ktor.okhttp)
+            api(libs.ktor.client.okhttp)
         }
         iosMain.dependencies {
-            implementation(libs.ktor.darwin)
+            implementation(libs.ktor.client.darwin)
         }
     }
 }

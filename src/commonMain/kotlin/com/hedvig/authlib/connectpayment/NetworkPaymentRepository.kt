@@ -1,38 +1,22 @@
 package com.hedvig.authlib.connectpayment
 
 import com.hedvig.authlib.AuthEnvironment
-import com.hedvig.authlib.MemberAuthorizationCodeResult
-import com.hedvig.authlib.MemberPaymentUrl
 import com.hedvig.authlib.baseUrl
-import com.hedvig.authlib.internal.commonKtorConfiguration
-import com.hedvig.authlib.network.MemberAuthorizationCodesResponse
+import com.hedvig.authlib.internal.buildKtorClient
 import com.hedvig.authlib.webBaseUrl
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.call.body
-import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.request.post
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.*
+import io.ktor.client.request.*
 import kotlinx.coroutines.CancellationException
+import kotlin.jvm.JvmInline
 
 public class NetworkPaymentRepository(
     private val environment: AuthEnvironment,
-    private val additionalHttpHeadersProvider: () -> Map<String, String>,
-    private val httpClientEngine: HttpClientEngine? = null,
+    additionalHttpHeadersProvider: () -> Map<String, String>,
+    httpClientEngine: HttpClientEngine? = null,
 ) : PaymentRepository {
-    private val ktorClient: HttpClient = run {
-        val httpClientConfig: HttpClientConfig<*>.() -> Unit = {
-            commonKtorConfiguration(additionalHttpHeadersProvider).invoke(this)
-        }
-        if (httpClientEngine == null) {
-            HttpClient {
-                httpClientConfig()
-            }
-        } else {
-            HttpClient(httpClientEngine) {
-                httpClientConfig()
-            }
-        }
-    }
+    private val ktorClient: HttpClient = buildKtorClient(httpClientEngine, additionalHttpHeadersProvider)
 
     override suspend fun getMemberAuthorizationCode(
         webLocale: String,
@@ -58,3 +42,16 @@ public class NetworkPaymentRepository(
         }
     }
 }
+
+public sealed interface MemberAuthorizationCodeResult {
+    public data class Error(val error: Throwable) : MemberAuthorizationCodeResult
+
+    public data class Success(
+        public val memberPaymentUrl: MemberPaymentUrl,
+    ) : MemberAuthorizationCodeResult
+}
+
+@JvmInline
+public value class MemberPaymentUrl(
+    public val url: String
+)
