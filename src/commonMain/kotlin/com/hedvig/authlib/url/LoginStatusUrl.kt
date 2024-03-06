@@ -5,4 +5,4 @@ import kotlin.jvm.JvmInline
 
 @Serializable
 @JvmInline
-public value class LoginStatusUrl(public val url: String)
+internal value class LoginStatusUrl(internal val url: String)

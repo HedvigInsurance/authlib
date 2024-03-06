@@ -6,7 +6,7 @@ import kotlin.jvm.JvmInline
 
 @Serializable
 @JvmInline
-public value class OtpResendUrl(
+internal value class OtpResendUrl(
     @SerialName("resendUrl")
-    public val url: String
+    internal val url: String
 )

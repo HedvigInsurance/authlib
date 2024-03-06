@@ -1,6 +1,5 @@
 package com.hedvig.authlib
 
-import com.hedvig.authlib.url.LoginStatusUrl
 import kotlinx.coroutines.flow.Flow
 
 public interface AuthRepository {
@@ -11,9 +10,9 @@ public interface AuthRepository {
         email: String? = null,
     ): AuthAttemptResult
 
-    public fun observeLoginStatus(statusUrl: LoginStatusUrl): Flow<LoginStatusResult>
+    public fun observeLoginStatus(statusUrl: StatusUrl): Flow<LoginStatusResult>
 
-    public suspend fun loginStatus(statusUrl: LoginStatusUrl): LoginStatusResult
+    public suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult
 
     public suspend fun submitOtp(verifyUrl: String, otp: String): SubmitOtpResult
 
@@ -43,13 +42,13 @@ public sealed interface AuthAttemptResult {
 
     public data class BankIdProperties(
         val id: String,
-        val statusUrl: LoginStatusUrl,
+        val statusUrl: StatusUrl,
         val autoStartToken: String,
     ) : AuthAttemptResult
 
     public data class OtpProperties(
         val id: String,
-        val statusUrl: LoginStatusUrl,
+        val statusUrl: StatusUrl,
         val resendUrl: String,
         val verifyUrl: String,
         val maskedEmail: String?,
@@ -118,3 +117,5 @@ public sealed interface RevokeResult {
     public data class Error(val message: String) : RevokeResult
     public data object Success : RevokeResult
 }
+
+public data class StatusUrl(val url: String)

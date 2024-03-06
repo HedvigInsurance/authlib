@@ -6,7 +6,7 @@ import kotlin.jvm.JvmInline
 
 @Serializable
 @JvmInline
-public value class OtpVerifyUrl(
+internal value class OtpVerifyUrl(
     @SerialName("verifyUrl")
-    public val url: String
+    internal val url: String
 )
