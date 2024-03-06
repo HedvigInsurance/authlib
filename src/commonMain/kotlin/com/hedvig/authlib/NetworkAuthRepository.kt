@@ -41,7 +41,7 @@ public class NetworkAuthRepository(
                         is LoginSwedenResponse.Success -> {
                             AuthAttemptResult.BankIdProperties(
                                 response.id,
-                                response.statusUrl,
+                                StatusUrl(response.statusUrl.url),
                                 response.seBankIdProperties.autoStartToken,
                             )
                         }
@@ -76,7 +76,7 @@ public class NetworkAuthRepository(
                         is LoginOtpResponse.Error -> AuthAttemptResult.Error.Localised(otpResponse.reason)
                         is LoginOtpResponse.Success -> AuthAttemptResult.OtpProperties(
                             id = otpResponse.id,
-                            statusUrl = otpResponse.statusUrl,
+                            statusUrl = StatusUrl(otpResponse.statusUrl.url),
                             resendUrl = otpResponse.otpProperties.resendUrl.url,
                             verifyUrl = otpResponse.otpProperties.verifyUrl.url,
                             maskedEmail = otpResponse.otpProperties.maskedEmail,
@@ -97,9 +97,9 @@ public class NetworkAuthRepository(
         }
     }
 
-    override suspend fun loginStatus(statusUrl: LoginStatusUrl): LoginStatusResult {
+    override suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult {
         return try {
-            val response = authService.loginStatus(statusUrl)
+            val response = authService.loginStatus(LoginStatusUrl(statusUrl.url))
             when (response.status) {
                 LoginStatusResponse.LoginStatus.PENDING -> LoginStatusResult.Pending(
                     response.statusText,
@@ -130,7 +130,7 @@ public class NetworkAuthRepository(
         }
     }
 
-    override fun observeLoginStatus(statusUrl: LoginStatusUrl): Flow<LoginStatusResult> {
+    override fun observeLoginStatus(statusUrl: StatusUrl): Flow<LoginStatusResult> {
         return flow {
             while (currentCoroutineContext().isActive) {
                 val loginStatusResult = loginStatus(statusUrl)
