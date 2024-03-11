@@ -3,6 +3,7 @@ import co.touchlab.faktory.versionmanager.ManualVersionManager
 plugins {
     kotlin("multiplatform") version libs.versions.kotlin.get()
     alias(libs.plugins.serialization)
+    alias(libs.plugins.skie)
     alias(libs.plugins.kmmBridge)
     alias(libs.plugins.vanniktechGradleMavenPublish)
 }

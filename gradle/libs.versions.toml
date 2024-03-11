@@ -1,8 +1,9 @@
 [versions]
-kotlin = "1.9.20"
-ktor = "2.3.8"
-kotlinxSerialization = "1.6.1"
 kmmBridge = "0.5.1"
+kotlin = "1.9.20"
+kotlinxSerialization = "1.6.1"
+ktor = "2.3.8"
+skie = "0.6.1"
 vanniktechMavenPublish = "0.25.3"
 
 [libraries]
@@ -17,4 +18,5 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 [plugins]
 kmmBridge = { id = "co.touchlab.kmmbridge", version.ref = "kmmBridge" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+skie = { id = "co.touchlab.skie", version.ref = "skie" }
 vanniktechGradleMavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
