@@ -57,9 +57,11 @@ public sealed interface AuthAttemptResult {
 
 public sealed interface AuthTokenResult {
     public sealed interface Error : AuthTokenResult {
-        public data class BackendErrorResponse(val message: String) : Error
-        public data class IOError(val message: String) : Error
-        public data class UnknownError(val message: String) : Error
+        public val message: String
+
+        public data class BackendErrorResponse(override val message: String) : Error
+        public data class IOError(override val message: String) : Error
+        public data class UnknownError(override val message: String) : Error
     }
 
     public data class Success(
