@@ -97,7 +97,7 @@ public class NetworkAuthRepository(
         }
     }
 
-    override suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult {
+    private suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult {
         return try {
             val response = authService.loginStatus(LoginStatusUrl(statusUrl.url))
             when (response.status) {

@@ -12,8 +12,6 @@ public interface AuthRepository {
 
     public fun observeLoginStatus(statusUrl: StatusUrl): Flow<LoginStatusResult>
 
-    public suspend fun loginStatus(statusUrl: StatusUrl): LoginStatusResult
-
     public suspend fun submitOtp(verifyUrl: String, otp: String): SubmitOtpResult
 
     public suspend fun resendOtp(resendUrl: String): ResendOtpResult
