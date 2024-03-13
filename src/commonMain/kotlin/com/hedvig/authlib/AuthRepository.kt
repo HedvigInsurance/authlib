@@ -10,6 +10,12 @@ public interface AuthRepository {
         email: String? = null,
     ): AuthAttemptResult
 
+    /**
+     * Returns a sequence of [LoginStatusResult] for as long as the status is still [LoginStatusResult.Pending].
+     * Continuously queries the status every [POLL_DELAY_MILLIS] milliseconds while the sequence is still active.
+     * When the last [LoginStatusResult] response which is not [LoginStatusResult.Pending] is sent, the sequence ends
+     * successfully.
+     */
     public fun observeLoginStatus(statusUrl: StatusUrl): Flow<LoginStatusResult>
 
     public suspend fun submitOtp(verifyUrl: String, otp: String): SubmitOtpResult
