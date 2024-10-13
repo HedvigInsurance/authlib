@@ -32,4 +32,4 @@ jobs:
         run: ./gradlew publishAllPublicationsToMavenRepository
 
       - name: Create release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
