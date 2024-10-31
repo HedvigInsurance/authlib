@@ -126,3 +126,9 @@ kmmbridge {
     mavenPublishArtifacts()
     versionManager.set(ManualVersionManager)
 }
+
+skie {
+    build {
+        enableSwiftLibraryEvolution.set(true)
+    }
+}
