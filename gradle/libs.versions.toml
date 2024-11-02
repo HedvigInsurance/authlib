@@ -4,7 +4,7 @@ kotlin = "2.0.21"
 kotlinxSerialization = "1.7.3"
 ktor = "3.0.1"
 skie = "0.9.3"
-vanniktechMavenPublish = "0.25.3"
+vanniktechMavenPublish = "0.30.0"
 
 [libraries]
 kotlinx-serializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
