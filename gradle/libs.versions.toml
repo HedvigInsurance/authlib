@@ -3,7 +3,7 @@ kmmBridge = "0.5.1"
 kotlin = "2.0.21"
 kotlinxSerialization = "1.7.3"
 ktor = "3.0.1"
-skie = "0.9.3"
+skie = "0.10.0"
 vanniktechMavenPublish = "0.25.3"
 
 [libraries]
