@@ -26,7 +26,7 @@ jobs:
 
       - name: Build
         id: gradle
-        uses: gradle/gradle-build-action@v2.3.3
+        uses: gradle/gradle-build-action@v3.5.0
 
       - name: Publish to GitHub packages
         run: ./gradlew publishAllPublicationsToMavenRepository
