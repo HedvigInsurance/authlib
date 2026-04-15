@@ -1,7 +1,7 @@
 [versions]
 kmmBridge = "0.5.1"
 kotlin = "2.0.21"
-kotlinxSerialization = "1.7.3"
+kotlinxSerialization = "1.11.0"
 ktor = "3.0.1"
 skie = "0.9.3"
 vanniktechMavenPublish = "0.25.3"
