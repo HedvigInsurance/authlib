@@ -1,6 +1,7 @@
 package com.hedvig.authlib
 
 import com.hedvig.authlib.authservice.AuthService
+import com.hedvig.authlib.authservice.UnexpectedStatusException
 import com.hedvig.authlib.authservice.model.*
 import com.hedvig.authlib.internal.buildKtorClient
 import com.hedvig.authlib.url.LoginStatusUrl
@@ -192,6 +193,15 @@ public class NetworkAuthRepository(
         } catch (e: Throwable) {
             when (e) {
                 is CancellationException -> throw e
+                // A 5xx is the server being unwell, not the token being bad. Callers treat IOError
+                // as retryable, so reporting it that way keeps a short outage from ending sessions
+                // that still hold a perfectly good refresh token.
+                is UnexpectedStatusException -> if (e.status.value >= 500) {
+                    AuthTokenResult.Error.IOError("IO Error with message: ${e.message}")
+                } else {
+                    AuthTokenResult.Error.BackendErrorResponse(e.message ?: "unknown error")
+                }
+
                 is IOException -> AuthTokenResult.Error.IOError("IO Error with message: ${e.message ?: "unknown message"}")
                 is NoTransformationFoundException -> AuthTokenResult.Error.BackendErrorResponse(
                     e.message ?: "unknown error"

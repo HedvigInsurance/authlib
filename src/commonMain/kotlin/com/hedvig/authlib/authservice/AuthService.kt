@@ -86,6 +86,9 @@ internal class AuthService(
             contentType(ContentType.Application.Json)
             setBody(grantTokenInput)
         }
+        if (!response.status.isSuccess()) {
+            throw UnexpectedStatusException(response.status, "/oauth/token")
+        }
         return response.body<GrantTokenOutput>()
     }
 

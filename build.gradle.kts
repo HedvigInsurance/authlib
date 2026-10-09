@@ -40,6 +40,11 @@ kotlin {
             implementation(libs.ktor.client.json)
             implementation(libs.ktor.client.logging)
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutinesTest)
+            implementation(libs.ktor.client.mock)
+        }
         jvmMain.dependencies {
             api(libs.ktor.client.okhttp)
         }
